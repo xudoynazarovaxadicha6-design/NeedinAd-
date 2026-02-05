@@ -1,4 +1,561 @@
-<!DOCTYPE html>
+import React, { useState, useEffect } from 'react';
+
+export default function NeedinAdApp() {
+  const [currentQuestion, setCurrentQuestion] = useState('');
+  const [archivedQuestions, setArchivedQuestions] = useState([]);
+  const [questionInput, setQuestionInput] = useState('');
+  const [answerInput, setAnswerInput] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [currentView, setCurrentView] = useState('main');
+  const [answers, setAnswers] = useState([]);
+  const [ownerPassword, setOwnerPassword] = useState('owner123');
+  const [currentLang, setCurrentLang] = useState('uz');
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const translations = {
+    uz: {
+      subtitle: "Savol bitta. Fikrlar ko'p.",
+      home: "Bosh sahifa",
+      archive: "Arxiv",
+      settings: "Sozlamalar",
+      postQuestion: "Savol joylash",
+      questionPlaceholder: "Savolni yozing...",
+      postQuestionBtn: "Savolni joylash",
+      currentQuestion: "Hozirgi Savol",
+      noQuestion: "Hozirda savol yo'q",
+      deleteQuestion: "Savolni o'chirish",
+      anonymousAnswer: "Anonim javob qoldirish",
+      answerPlaceholder: "Fikringizni yozing...",
+      sendAnswer: "Javob yuborish",
+      answers: "Javoblar",
+      noAnswers: "Hozircha javoblar yo'q. Birinchi bo'lib javob qoldiring!",
+      archiveTitle: "Arxiv",
+      emptyArchive: "Arxivda hech narsa yo'q",
+      settingsTitle: "Sozlamalar",
+      changesSaved: "O'zgarishlar saqlandi!",
+      selectLanguage: "Tilni tanlang:",
+      changePassword: "Parolni o'zgartirish (faqat egasi):",
+      oldPasswordPlaceholder: "Hozirgi parol",
+      newPasswordPlaceholder: "Yangi parol",
+      confirmPasswordPlaceholder: "Parolni tasdiqlang",
+      changePasswordBtn: "Parolni o'zgartirish",
+      enterPassword: "Parolni kiriting",
+      ownerPasswordPlaceholder: "Ega paroli...",
+      confirm: "Tasdiqlash",
+      cancel: "Bekor qilish",
+      confirmDelete: "Savolni o'chirishni tasdiqlaysizmi?",
+      deleteWarning: "Bu amalni qaytarib bo'lmaydi!",
+      delete: "O'chirish",
+      answersCount: "javob"
+    },
+    en: {
+      subtitle: "One question. Many thoughts.",
+      home: "Home",
+      archive: "Archive",
+      settings: "Settings",
+      postQuestion: "Post Question",
+      questionPlaceholder: "Write your question...",
+      postQuestionBtn: "Post Question",
+      currentQuestion: "Current Question",
+      noQuestion: "No question yet",
+      deleteQuestion: "Delete Question",
+      anonymousAnswer: "Leave Anonymous Answer",
+      answerPlaceholder: "Share your thoughts...",
+      sendAnswer: "Send Answer",
+      answers: "Answers",
+      noAnswers: "No answers yet. Be the first!",
+      archiveTitle: "Archive",
+      emptyArchive: "Archive is empty",
+      settingsTitle: "Settings",
+      changesSaved: "Changes saved!",
+      selectLanguage: "Select Language:",
+      changePassword: "Change Password (owner only):",
+      oldPasswordPlaceholder: "Current password",
+      newPasswordPlaceholder: "New password",
+      confirmPasswordPlaceholder: "Confirm password",
+      changePasswordBtn: "Change Password",
+      enterPassword: "Enter Password",
+      ownerPasswordPlaceholder: "Owner password...",
+      confirm: "Confirm",
+      cancel: "Cancel",
+      confirmDelete: "Confirm deletion?",
+      deleteWarning: "This cannot be undone!",
+      delete: "Delete",
+      answersCount: "answers"
+    },
+    ru: {
+      subtitle: "Один вопрос. Много мыслей.",
+      home: "Главная",
+      archive: "Архив",
+      settings: "Настройки",
+      postQuestion: "Опубликовать",
+      questionPlaceholder: "Напишите вопрос...",
+      postQuestionBtn: "Опубликовать",
+      currentQuestion: "Текущий вопрос",
+      noQuestion: "Нет вопроса",
+      deleteQuestion: "Удалить вопрос",
+      anonymousAnswer: "Анонимный ответ",
+      answerPlaceholder: "Ваши мысли...",
+      sendAnswer: "Отправить",
+      answers: "Ответы",
+      noAnswers: "Нет ответов. Будьте первым!",
+      archiveTitle: "Архив",
+      emptyArchive: "Архив пуст",
+      settingsTitle: "Настройки",
+      changesSaved: "Изменения сохранены!",
+      selectLanguage: "Выберите язык:",
+      changePassword: "Изменить пароль:",
+      oldPasswordPlaceholder: "Текущий пароль",
+      newPasswordPlaceholder: "Новый пароль",
+      confirmPasswordPlaceholder: "Подтвердите",
+      changePasswordBtn: "Изменить пароль",
+      enterPassword: "Введите пароль",
+      ownerPasswordPlaceholder: "Пароль...",
+      confirm: "Подтвердить",
+      cancel: "Отмена",
+      confirmDelete: "Удалить вопрос?",
+      deleteWarning: "Это действие нельзя отменить!",
+      delete: "Удалить",
+      answersCount: "ответов"
+    }
+  };
+
+  const t = translations[currentLang];
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const currentQ = await window.storage.get('needin:current');
+      if (currentQ) {
+        const data = JSON.parse(currentQ.value);
+        setCurrentQuestion(data.question);
+        setAnswers(data.answers || []);
+      }
+      const archived = await window.storage.get('needin:archive');
+      if (archived) {
+        setArchivedQuestions(JSON.parse(archived.value));
+      }
+      const savedPass = await window.storage.get('needin:password');
+      if (savedPass) {
+        setOwnerPassword(savedPass.value);
+      }
+      const savedLang = await window.storage.get('needin:language');
+      if (savedLang) {
+        setCurrentLang(savedLang.value);
+      }
+    } catch (error) {
+      console.log('Loading from memory');
+    }
+  };
+
+  const addQuestion = async () => {
+    if (!questionInput.trim()) {
+      alert(t.questionPlaceholder);
+      return;
+    }
+    if (password !== ownerPassword) {
+      alert(currentLang === 'uz' ? "Parol noto'g'ri!" : currentLang === 'en' ? "Incorrect password!" : "Неверный пароль!");
+      setPassword('');
+      return;
+    }
+
+    try {
+      if (currentQuestion) {
+        const archived = [...archivedQuestions];
+        archived.unshift({
+          id: Date.now(),
+          question: currentQuestion,
+          answers: answers,
+          date: new Date().toLocaleDateString()
+        });
+        setArchivedQuestions(archived);
+        await window.storage.set('needin:archive', JSON.stringify(archived));
+      }
+
+      const newQuestion = {
+        question: questionInput.trim(),
+        answers: []
+      };
+      
+      await window.storage.set('needin:current', JSON.stringify(newQuestion));
+      
+      setCurrentQuestion(questionInput.trim());
+      setAnswers([]);
+      setQuestionInput('');
+      setPassword('');
+      setShowPasswordModal(false);
+      alert(currentLang === 'uz' ? "Savol joylandi!" : currentLang === 'en' ? "Question posted!" : "Вопрос опубликован!");
+    } catch (error) {
+      console.log('Storage error:', error);
+    }
+  };
+
+  const deleteQuestion = async () => {
+    if (deletePassword !== ownerPassword) {
+      alert(currentLang === 'uz' ? "Parol noto'g'ri!" : currentLang === 'en' ? "Incorrect password!" : "Неверный пароль!");
+      setDeletePassword('');
+      return;
+    }
+
+    try {
+      if (currentQuestion) {
+        const archived = [...archivedQuestions];
+        archived.unshift({
+          id: Date.now(),
+          question: currentQuestion,
+          answers: answers,
+          date: new Date().toLocaleDateString()
+        });
+        setArchivedQuestions(archived);
+        await window.storage.set('needin:archive', JSON.stringify(archived));
+      }
+
+      await window.storage.delete('needin:current');
+      setCurrentQuestion('');
+      setAnswers([]);
+      setDeletePassword('');
+      setShowDeleteModal(false);
+      alert(currentLang === 'uz' ? "Savol o'chirildi!" : currentLang === 'en' ? "Question deleted!" : "Вопрос удален!");
+    } catch (error) {
+      console.log('Error:', error);
+    }
+  };
+
+  const addAnswer = async () => {
+    if (!answerInput.trim()) {
+      alert(t.answerPlaceholder);
+      return;
+    }
+    if (!currentQuestion) {
+      alert(t.noQuestion);
+      return;
+    }
+
+    try {
+      const newAnswers = [answerInput.trim(), ...answers];
+      setAnswers(newAnswers);
+
+      const updated = {
+        question: currentQuestion,
+        answers: newAnswers
+      };
+      
+      await window.storage.set('needin:current', JSON.stringify(updated));
+      setAnswerInput('');
+      alert(currentLang === 'uz' ? "Javob yuborildi!" : currentLang === 'en' ? "Answer sent!" : "Ответ отправлен!");
+    } catch (error) {
+      console.log('Storage error:', error);
+    }
+  };
+
+  const changePassword = async () => {
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      alert(currentLang === 'uz' ? "Barcha maydonlarni to'ldiring" : currentLang === 'en' ? "Fill all fields" : "Заполните все поля");
+      return;
+    }
+    if (oldPassword !== ownerPassword) {
+      alert(currentLang === 'uz' ? "Hozirgi parol noto'g'ri" : currentLang === 'en' ? "Current password incorrect" : "Текущий пароль неверен");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      alert(currentLang === 'uz' ? "Parollar mos kelmadi" : currentLang === 'en' ? "Passwords don't match" : "Пароли не совпадают");
+      return;
+    }
+    if (newPassword.length < 4) {
+      alert(currentLang === 'uz' ? "Parol 4+ belgidan iborat bo'lsin" : currentLang === 'en' ? "Password must be 4+ characters" : "Пароль должен быть 4+ символов");
+      return;
+    }
+
+    try {
+      await window.storage.set('needin:password', newPassword);
+      setOwnerPassword(newPassword);
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (error) {
+      console.log('Error:', error);
+    }
+  };
+
+  const changeLanguage = async (lang) => {
+    setCurrentLang(lang);
+    try {
+      await window.storage.set('needin:language', lang);
+    } catch (error) {
+      console.log('Error:', error);
+    }
+  };
+
+  return (
+    <div style={{
+      fontFamily: 'Arial, sans-serif',
+      background: '#0f0f0f',
+      color: '#fff',
+      padding: '24px',
+      minHeight: '100vh',
+      maxWidth: '800px',
+      margin: '0 auto'
+    }}>
+      {/* Header */}
+      <div style={{ marginBottom: '30px' }}>
+        <h1 style={{ fontSize: '36px', margin: '0 0 10px 0' }}>NeedinAd</h1>
+        <p style={{ color: '#aaa', margin: '0 0 20px 0' }}>{t.subtitle}</p>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button onClick={() => setCurrentView('main')} style={btnStyle}>
+            🏠 {t.home}
+          </button>
+          <button onClick={() => setCurrentView('archive')} style={btnStyle}>
+            📚 {t.archive}
+          </button>
+          <button onClick={() => setCurrentView('settings')} style={btnStyle}>
+            ⚙️ {t.settings}
+          </button>
+        </div>
+      </div>
+
+      {/* Main View */}
+      {currentView === 'main' && (
+        <>
+          <div style={boxStyle}>
+            <h3 style={h3Style}>{t.postQuestion} (faqat egasi) 🔐</h3>
+            <input
+              type="text"
+              value={questionInput}
+              onChange={(e) => setQuestionInput(e.target.value)}
+              placeholder={t.questionPlaceholder}
+              style={inputStyle}
+            />
+            <button onClick={() => setShowPasswordModal(true)} style={primaryBtnStyle}>
+              {t.postQuestionBtn}
+            </button>
+          </div>
+
+          <div style={boxStyle}>
+            <h3 style={h3Style}>📌 {t.currentQuestion}</h3>
+            {currentQuestion ? (
+              <>
+                <p style={{
+                  margin: 0,
+                  fontSize: '16px',
+                  lineHeight: '1.5',
+                  background: '#222',
+                  padding: '12px',
+                  borderRadius: '6px'
+                }}>{currentQuestion}</p>
+                <button onClick={() => setShowDeleteModal(true)} style={deleteBtnStyle}>
+                  🗑️ {t.deleteQuestion}
+                </button>
+              </>
+            ) : (
+              <p style={emptyStyle}>{t.noQuestion}</p>
+            )}
+          </div>
+
+          <div style={boxStyle}>
+            <h3 style={h3Style}>💬 {t.anonymousAnswer}</h3>
+            <textarea
+              value={answerInput}
+              onChange={(e) => setAnswerInput(e.target.value)}
+              placeholder={t.answerPlaceholder}
+              style={textareaStyle}
+            />
+            <button onClick={addAnswer} style={primaryBtnStyle}>
+              {t.sendAnswer}
+            </button>
+          </div>
+
+          <div style={boxStyle}>
+            <h3 style={h3Style}>💭 {t.answers} ({answers.length})</h3>
+            {answers.length === 0 ? (
+              <p style={emptyStyle}>{t.noAnswers}</p>
+            ) : (
+              answers.map((ans, idx) => (
+                <div key={idx} style={answerStyle}>{ans}</div>
+              ))
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Archive View */}
+      {currentView === 'archive' && (
+        <div style={boxStyle}>
+          <h2 style={{ margin: '0 0 20px 0', fontSize: '24px' }}>📚 {t.archiveTitle}</h2>
+          {archivedQuestions.length === 0 ? (
+            <p style={emptyStyle}>{t.emptyArchive}</p>
+          ) : (
+            archivedQuestions.map((item) => (
+              <div key={item.id} style={{
+                background: '#222',
+                padding: '16px',
+                borderRadius: '8px',
+                marginBottom: '16px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <h3 style={{ margin: 0, fontSize: '16px', color: '#4CAF50', flex: 1 }}>
+                    {item.question}
+                  </h3>
+                  <span style={{ fontSize: '12px', color: '#888', marginLeft: '12px' }}>
+                    {item.date}
+                  </span>
+                </div>
+                <div style={{ paddingLeft: '12px', borderLeft: '3px solid #333' }}>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#aaa' }}>
+                    {item.answers.length} {t.answersCount}
+                  </p>
+                  {item.answers.slice(0, 3).map((ans, idx) => (
+                    <div key={idx} style={{
+                      background: '#1a1a1a',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      marginBottom: '6px',
+                      fontSize: '14px',
+                      color: '#ccc'
+                    }}>{ans}</div>
+                  ))}
+                  {item.answers.length > 3 && (
+                    <p style={{ fontSize: '12px', color: '#666', fontStyle: 'italic' }}>
+                      ... {currentLang === 'uz' ? 'va yana' : currentLang === 'en' ? 'and' : 'и ещё'} {item.answers.length - 3} {t.answersCount}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Settings View */}
+      {currentView === 'settings' && (
+        <div style={boxStyle}>
+          <h2 style={{ margin: '0 0 20px 0', fontSize: '24px' }}>⚙️ {t.settingsTitle}</h2>
+          
+          {showSuccess && (
+            <div style={{
+              background: '#4CAF50',
+              color: 'white',
+              padding: '12px',
+              borderRadius: '4px',
+              marginBottom: '16px'
+            }}>{t.changesSaved}</div>
+          )}
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#aaa', fontSize: '14px' }}>
+              {t.selectLanguage}
+            </label>
+            <select
+              value={currentLang}
+              onChange={(e) => changeLanguage(e.target.value)}
+              style={inputStyle}
+            >
+              <option value="uz">O'zbek</option>
+              <option value="en">English</option>
+              <option value="ru">Русский</option>
+            </select>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', color: '#aaa', fontSize: '14px' }}>
+              {t.changePassword}
+            </label>
+            <input
+              type="password"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              placeholder={t.oldPasswordPlaceholder}
+              style={inputStyle}
+            />
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder={t.newPasswordPlaceholder}
+              style={inputStyle}
+            />
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder={t.confirmPasswordPlaceholder}
+              style={inputStyle}
+            />
+            <button onClick={changePassword} style={primaryBtnStyle}>
+              {t.changePasswordBtn}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div style={modalStyle}>
+          <div style={modalContentStyle}>
+            <h3 style={{ margin: '0 0 16px 0' }}>{t.enterPassword}</h3>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={t.ownerPasswordPlaceholder}
+              style={{ ...inputStyle, border: '1px solid #444' }}
+              onKeyPress={(e) => e.key === 'Enter' && addQuestion()}
+            />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={addQuestion} style={successBtnStyle}>
+                {t.confirm}
+              </button>
+              <button onClick={() => { setShowPasswordModal(false); setPassword(''); }} style={dangerBtnStyle}>
+                {t.cancel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Modal */}
+      {showDeleteModal && (
+        <div style={modalStyle}>
+          <div style={modalContentStyle}>
+            <h3 style={{ margin: '0 0 16px 0' }}>{t.confirmDelete}</h3>
+            <p style={{ color: '#aaa', marginBottom: '16px' }}>{t.deleteWarning}</p>
+            <input
+              type="password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              placeholder={t.ownerPasswordPlaceholder}
+              style={{ ...inputStyle, border: '1px solid #444' }}
+              onKeyPress={(e) => e.key === 'Enter' && deleteQuestion()}
+            />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={deleteQuestion} style={dangerBtnStyle}>
+                {t.delete}
+              </button>
+              <button onClick={() => { setShowDeleteModal(false); setDeletePassword(''); }} style={successBtnStyle}>
+                {t.cancel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const btnStyle = { padding: '8px 16px', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' };
+const boxStyle = { background: '#1a1a1a', padding: '16px', borderRadius: '8px', marginBottom: '16px' };
+const h3Style = { margin: '0 0 12px 0', fontSize: '18px' };
+const inputStyle = { width: '100%', padding: '10px', marginBottom: '10px', ba<!DOCTYPE html>
 <html lang="uz">
 <head>
   <meta charset="UTF-8" />
