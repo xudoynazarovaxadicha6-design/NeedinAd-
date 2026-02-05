@@ -1,566 +1,9 @@
-import React, { useState, useEffect } from 'react';
-
-export default function NeedinAdApp() {
-  const [currentQuestion, setCurrentQuestion] = useState('');
-  const [archivedQuestions, setArchivedQuestions] = useState([]);
-  const [questionInput, setQuestionInput] = useState('');
-  const [answerInput, setAnswerInput] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletePassword, setDeletePassword] = useState('');
-  const [currentView, setCurrentView] = useState('main');
-  const [answers, setAnswers] = useState([]);
-  const [ownerPassword, setOwnerPassword] = useState('owner123');
-  const [currentLang, setCurrentLang] = useState('uz');
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showSuccess, setShowSuccess] = useState(false);
-
-  const translations = {
-    uz: {
-      subtitle: "Savol bitta. Fikrlar ko'p.",
-      home: "Bosh sahifa",
-      archive: "Arxiv",
-      settings: "Sozlamalar",
-      postQuestion: "Savol joylash",
-      questionPlaceholder: "Savolni yozing...",
-      postQuestionBtn: "Savolni joylash",
-      currentQuestion: "Hozirgi Savol",
-      noQuestion: "Hozirda savol yo'q",
-      deleteQuestion: "Savolni o'chirish",
-      anonymousAnswer: "Anonim javob qoldirish",
-      answerPlaceholder: "Fikringizni yozing...",
-      sendAnswer: "Javob yuborish",
-      answers: "Javoblar",
-      noAnswers: "Hozircha javoblar yo'q. Birinchi bo'lib javob qoldiring!",
-      archiveTitle: "Arxiv",
-      emptyArchive: "Arxivda hech narsa yo'q",
-      settingsTitle: "Sozlamalar",
-      changesSaved: "O'zgarishlar saqlandi!",
-      selectLanguage: "Tilni tanlang:",
-      changePassword: "Parolni o'zgartirish (faqat egasi):",
-      oldPasswordPlaceholder: "Hozirgi parol",
-      newPasswordPlaceholder: "Yangi parol",
-      confirmPasswordPlaceholder: "Parolni tasdiqlang",
-      changePasswordBtn: "Parolni o'zgartirish",
-      enterPassword: "Parolni kiriting",
-      ownerPasswordPlaceholder: "Ega paroli...",
-      confirm: "Tasdiqlash",
-      cancel: "Bekor qilish",
-      confirmDelete: "Savolni o'chirishni tasdiqlaysizmi?",
-      deleteWarning: "Bu amalni qaytarib bo'lmaydi!",
-      delete: "O'chirish",
-      answersCount: "javob"
-    },
-    en: {
-      subtitle: "One question. Many thoughts.",
-      home: "Home",
-      archive: "Archive",
-      settings: "Settings",
-      postQuestion: "Post Question",
-      questionPlaceholder: "Write your question...",
-      postQuestionBtn: "Post Question",
-      currentQuestion: "Current Question",
-      noQuestion: "No question yet",
-      deleteQuestion: "Delete Question",
-      anonymousAnswer: "Leave Anonymous Answer",
-      answerPlaceholder: "Share your thoughts...",
-      sendAnswer: "Send Answer",
-      answers: "Answers",
-      noAnswers: "No answers yet. Be the first!",
-      archiveTitle: "Archive",
-      emptyArchive: "Archive is empty",
-      settingsTitle: "Settings",
-      changesSaved: "Changes saved!",
-      selectLanguage: "Select Language:",
-      changePassword: "Change Password (owner only):",
-      oldPasswordPlaceholder: "Current password",
-      newPasswordPlaceholder: "New password",
-      confirmPasswordPlaceholder: "Confirm password",
-      changePasswordBtn: "Change Password",
-      enterPassword: "Enter Password",
-      ownerPasswordPlaceholder: "Owner password...",
-      confirm: "Confirm",
-      cancel: "Cancel",
-      confirmDelete: "Confirm deletion?",
-      deleteWarning: "This cannot be undone!",
-      delete: "Delete",
-      answersCount: "answers"
-    },
-    ru: {
-      subtitle: "Один вопрос. Много мыслей.",
-      home: "Главная",
-      archive: "Архив",
-      settings: "Настройки",
-      postQuestion: "Опубликовать",
-      questionPlaceholder: "Напишите вопрос...",
-      postQuestionBtn: "Опубликовать",
-      currentQuestion: "Текущий вопрос",
-      noQuestion: "Нет вопроса",
-      deleteQuestion: "Удалить вопрос",
-      anonymousAnswer: "Анонимный ответ",
-      answerPlaceholder: "Ваши мысли...",
-      sendAnswer: "Отправить",
-      answers: "Ответы",
-      noAnswers: "Нет ответов. Будьте первым!",
-      archiveTitle: "Архив",
-      emptyArchive: "Архив пуст",
-      settingsTitle: "Настройки",
-      changesSaved: "Изменения сохранены!",
-      selectLanguage: "Выберите язык:",
-      changePassword: "Изменить пароль:",
-      oldPasswordPlaceholder: "Текущий пароль",
-      newPasswordPlaceholder: "Новый пароль",
-      confirmPasswordPlaceholder: "Подтвердите",
-      changePasswordBtn: "Изменить пароль",
-      enterPassword: "Введите пароль",
-      ownerPasswordPlaceholder: "Пароль...",
-      confirm: "Подтвердить",
-      cancel: "Отмена",
-      confirmDelete: "Удалить вопрос?",
-      deleteWarning: "Это действие нельзя отменить!",
-      delete: "Удалить",
-      answersCount: "ответов"
-    }
-  };
-
-  const t = translations[currentLang];
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    try {
-      const currentQ = await window.storage.get('needin:current');
-      if (currentQ) {
-        const data = JSON.parse(currentQ.value);
-        setCurrentQuestion(data.question);
-        setAnswers(data.answers || []);
-      }
-      const archived = await window.storage.get('needin:archive');
-      if (archived) {
-        setArchivedQuestions(JSON.parse(archived.value));
-      }
-      const savedPass = await window.storage.get('needin:password');
-      if (savedPass) {
-        setOwnerPassword(savedPass.value);
-      }
-      const savedLang = await window.storage.get('needin:language');
-      if (savedLang) {
-        setCurrentLang(savedLang.value);
-      }
-    } catch (error) {
-      console.log('Loading from memory');
-    }
-  };
-
-  const addQuestion = async () => {
-    if (!questionInput.trim()) {
-      alert(t.questionPlaceholder);
-      return;
-    }
-    if (password !== ownerPassword) {
-      alert(currentLang === 'uz' ? "Parol noto'g'ri!" : currentLang === 'en' ? "Incorrect password!" : "Неверный пароль!");
-      setPassword('');
-      return;
-    }
-
-    try {
-      if (currentQuestion) {
-        const archived = [...archivedQuestions];
-        archived.unshift({
-          id: Date.now(),
-          question: currentQuestion,
-          answers: answers,
-          date: new Date().toLocaleDateString()
-        });
-        setArchivedQuestions(archived);
-        await window.storage.set('needin:archive', JSON.stringify(archived));
-      }
-
-      const newQuestion = {
-        question: questionInput.trim(),
-        answers: []
-      };
-      
-      await window.storage.set('needin:current', JSON.stringify(newQuestion));
-      
-      setCurrentQuestion(questionInput.trim());
-      setAnswers([]);
-      setQuestionInput('');
-      setPassword('');
-      setShowPasswordModal(false);
-      alert(currentLang === 'uz' ? "Savol joylandi!" : currentLang === 'en' ? "Question posted!" : "Вопрос опубликован!");
-    } catch (error) {
-      console.log('Storage error:', error);
-    }
-  };
-
-  const deleteQuestion = async () => {
-    if (deletePassword !== ownerPassword) {
-      alert(currentLang === 'uz' ? "Parol noto'g'ri!" : currentLang === 'en' ? "Incorrect password!" : "Неверный пароль!");
-      setDeletePassword('');
-      return;
-    }
-
-    try {
-      if (currentQuestion) {
-        const archived = [...archivedQuestions];
-        archived.unshift({
-          id: Date.now(),
-          question: currentQuestion,
-          answers: answers,
-          date: new Date().toLocaleDateString()
-        });
-        setArchivedQuestions(archived);
-        await window.storage.set('needin:archive', JSON.stringify(archived));
-      }
-
-      await window.storage.delete('needin:current');
-      setCurrentQuestion('');
-      setAnswers([]);
-      setDeletePassword('');
-      setShowDeleteModal(false);
-      alert(currentLang === 'uz' ? "Savol o'chirildi!" : currentLang === 'en' ? "Question deleted!" : "Вопрос удален!");
-    } catch (error) {
-      console.log('Error:', error);
-    }
-  };
-
-  const addAnswer = async () => {
-    if (!answerInput.trim()) {
-      alert(t.answerPlaceholder);
-      return;
-    }
-    if (!currentQuestion) {
-      alert(t.noQuestion);
-      return;
-    }
-
-    try {
-      const newAnswers = [answerInput.trim(), ...answers];
-      setAnswers(newAnswers);
-
-      const updated = {
-        question: currentQuestion,
-        answers: newAnswers
-      };
-      
-      await window.storage.set('needin:current', JSON.stringify(updated));
-      setAnswerInput('');
-      alert(currentLang === 'uz' ? "Javob yuborildi!" : currentLang === 'en' ? "Answer sent!" : "Ответ отправлен!");
-    } catch (error) {
-      console.log('Storage error:', error);
-    }
-  };
-
-  const changePassword = async () => {
-    if (!oldPassword || !newPassword || !confirmPassword) {
-      alert(currentLang === 'uz' ? "Barcha maydonlarni to'ldiring" : currentLang === 'en' ? "Fill all fields" : "Заполните все поля");
-      return;
-    }
-    if (oldPassword !== ownerPassword) {
-      alert(currentLang === 'uz' ? "Hozirgi parol noto'g'ri" : currentLang === 'en' ? "Current password incorrect" : "Текущий пароль неверен");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      alert(currentLang === 'uz' ? "Parollar mos kelmadi" : currentLang === 'en' ? "Passwords don't match" : "Пароли не совпадают");
-      return;
-    }
-    if (newPassword.length < 4) {
-      alert(currentLang === 'uz' ? "Parol 4+ belgidan iborat bo'lsin" : currentLang === 'en' ? "Password must be 4+ characters" : "Пароль должен быть 4+ символов");
-      return;
-    }
-
-    try {
-      await window.storage.set('needin:password', newPassword);
-      setOwnerPassword(newPassword);
-      setOldPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
-    } catch (error) {
-      console.log('Error:', error);
-    }
-  };
-
-  const changeLanguage = async (lang) => {
-    setCurrentLang(lang);
-    try {
-      await window.storage.set('needin:language', lang);
-    } catch (error) {
-      console.log('Error:', error);
-    }
-  };
-
-  return (
-    <div style={{
-      fontFamily: 'Arial, sans-serif',
-      background: '#0f0f0f',
-      color: '#fff',
-      padding: '24px',
-      minHeight: '100vh',
-      maxWidth: '800px',
-      margin: '0 auto'
-    }}>
-      {/* Header */}
-      <div style={{ marginBottom: '30px' }}>
-        <h1 style={{ fontSize: '36px', margin: '0 0 10px 0' }}>NeedinAd</h1>
-        <p style={{ color: '#aaa', margin: '0 0 20px 0' }}>{t.subtitle}</p>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <button onClick={() => setCurrentView('main')} style={btnStyle}>
-            🏠 {t.home}
-          </button>
-          <button onClick={() => setCurrentView('archive')} style={btnStyle}>
-            📚 {t.archive}
-          </button>
-          <button onClick={() => setCurrentView('settings')} style={btnStyle}>
-            ⚙️ {t.settings}
-          </button>
-        </div>
-      </div>
-
-      {/* Main View */}
-      {currentView === 'main' && (
-        <>
-          <div style={boxStyle}>
-            <h3 style={h3Style}>{t.postQuestion} (faqat egasi) 🔐</h3>
-            <input
-              type="text"
-              value={questionInput}
-              onChange={(e) => setQuestionInput(e.target.value)}
-              placeholder={t.questionPlaceholder}
-              style={inputStyle}
-            />
-            <button onClick={() => setShowPasswordModal(true)} style={primaryBtnStyle}>
-              {t.postQuestionBtn}
-            </button>
-          </div>
-
-          <div style={boxStyle}>
-            <h3 style={h3Style}>📌 {t.currentQuestion}</h3>
-            {currentQuestion ? (
-              <>
-                <p style={{
-                  margin: 0,
-                  fontSize: '16px',
-                  lineHeight: '1.5',
-                  background: '#222',
-                  padding: '12px',
-                  borderRadius: '6px'
-                }}>{currentQuestion}</p>
-                <button onClick={() => setShowDeleteModal(true)} style={deleteBtnStyle}>
-                  🗑️ {t.deleteQuestion}
-                </button>
-              </>
-            ) : (
-              <p style={emptyStyle}>{t.noQuestion}</p>
-            )}
-          </div>
-
-          <div style={boxStyle}>
-            <h3 style={h3Style}>💬 {t.anonymousAnswer}</h3>
-            <textarea
-              value={answerInput}
-              onChange={(e) => setAnswerInput(e.target.value)}
-              placeholder={t.answerPlaceholder}
-              style={textareaStyle}
-            />
-            <button onClick={addAnswer} style={primaryBtnStyle}>
-              {t.sendAnswer}
-            </button>
-          </div>
-
-          <div style={boxStyle}>
-            <h3 style={h3Style}>💭 {t.answers} ({answers.length})</h3>
-            {answers.length === 0 ? (
-              <p style={emptyStyle}>{t.noAnswers}</p>
-            ) : (
-              answers.map((ans, idx) => (
-                <div key={idx} style={answerStyle}>{ans}</div>
-              ))
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Archive View */}
-      {currentView === 'archive' && (
-        <div style={boxStyle}>
-          <h2 style={{ margin: '0 0 20px 0', fontSize: '24px' }}>📚 {t.archiveTitle}</h2>
-          {archivedQuestions.length === 0 ? (
-            <p style={emptyStyle}>{t.emptyArchive}</p>
-          ) : (
-            archivedQuestions.map((item) => (
-              <div key={item.id} style={{
-                background: '#222',
-                padding: '16px',
-                borderRadius: '8px',
-                marginBottom: '16px'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <h3 style={{ margin: 0, fontSize: '16px', color: '#4CAF50', flex: 1 }}>
-                    {item.question}
-                  </h3>
-                  <span style={{ fontSize: '12px', color: '#888', marginLeft: '12px' }}>
-                    {item.date}
-                  </span>
-                </div>
-                <div style={{ paddingLeft: '12px', borderLeft: '3px solid #333' }}>
-                  <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#aaa' }}>
-                    {item.answers.length} {t.answersCount}
-                  </p>
-                  {item.answers.slice(0, 3).map((ans, idx) => (
-                    <div key={idx} style={{
-                      background: '#1a1a1a',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      marginBottom: '6px',
-                      fontSize: '14px',
-                      color: '#ccc'
-                    }}>{ans}</div>
-                  ))}
-                  {item.answers.length > 3 && (
-                    <p style={{ fontSize: '12px', color: '#666', fontStyle: 'italic' }}>
-                      ... {currentLang === 'uz' ? 'va yana' : currentLang === 'en' ? 'and' : 'и ещё'} {item.answers.length - 3} {t.answersCount}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* Settings View */}
-      {currentView === 'settings' && (
-        <div style={boxStyle}>
-          <h2 style={{ margin: '0 0 20px 0', fontSize: '24px' }}>⚙️ {t.settingsTitle}</h2>
-          
-          {showSuccess && (
-            <div style={{
-              background: '#4CAF50',
-              color: 'white',
-              padding: '12px',
-              borderRadius: '4px',
-              marginBottom: '16px'
-            }}>{t.changesSaved}</div>
-          )}
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: '#aaa', fontSize: '14px' }}>
-              {t.selectLanguage}
-            </label>
-            <select
-              value={currentLang}
-              onChange={(e) => changeLanguage(e.target.value)}
-              style={inputStyle}
-            >
-              <option value="uz">O'zbek</option>
-              <option value="en">English</option>
-              <option value="ru">Русский</option>
-            </select>
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: '#aaa', fontSize: '14px' }}>
-              {t.changePassword}
-            </label>
-            <input
-              type="password"
-              value={oldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-              placeholder={t.oldPasswordPlaceholder}
-              style={inputStyle}
-            />
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder={t.newPasswordPlaceholder}
-              style={inputStyle}
-            />
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder={t.confirmPasswordPlaceholder}
-              style={inputStyle}
-            />
-            <button onClick={changePassword} style={primaryBtnStyle}>
-              {t.changePasswordBtn}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Password Modal */}
-      {showPasswordModal && (
-        <div style={modalStyle}>
-          <div style={modalContentStyle}>
-            <h3 style={{ margin: '0 0 16px 0' }}>{t.enterPassword}</h3>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={t.ownerPasswordPlaceholder}
-              style={{ ...inputStyle, border: '1px solid #444' }}
-              onKeyPress={(e) => e.key === 'Enter' && addQuestion()}
-            />
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={addQuestion} style={successBtnStyle}>
-                {t.confirm}
-              </button>
-              <button onClick={() => { setShowPasswordModal(false); setPassword(''); }} style={dangerBtnStyle}>
-                {t.cancel}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Modal */}
-      {showDeleteModal && (
-        <div style={modalStyle}>
-          <div style={modalContentStyle}>
-            <h3 style={{ margin: '0 0 16px 0' }}>{t.confirmDelete}</h3>
-            <p style={{ color: '#aaa', marginBottom: '16px' }}>{t.deleteWarning}</p>
-            <input
-              type="password"
-              value={deletePassword}
-              onChange={(e) => setDeletePassword(e.target.value)}
-              placeholder={t.ownerPasswordPlaceholder}
-              style={{ ...inputStyle, border: '1px solid #444' }}
-              onKeyPress={(e) => e.key === 'Enter' && deleteQuestion()}
-            />
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={deleteQuestion} style={dangerBtnStyle}>
-                {t.delete}
-              </button>
-              <button onClick={() => { setShowDeleteModal(false); setDeletePassword(''); }} style={successBtnStyle}>
-                {t.cancel}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-const btnStyle = { padding: '8px 16px', background: '#333', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' };
-const boxStyle = { background: '#1a1a1a', padding: '16px', borderRadius: '8px', marginBottom: '16px' };
-const h3Style = { margin: '0 0 12px 0', fontSize: '18px' };
-const inputStyle = { width: '100%', padding: '10px', marginBottom: '10px', ba<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NeedinAd - Savol bitta. Fikrlar ko'p.</title>
+  <title>NeedinAd</title>
   <style>
     * {
       margin: 0;
@@ -804,11 +247,11 @@ const inputStyle = { width: '100%', padding: '10px', marginBottom: '10px', ba<!D
       margin: 8px 0 0 0;
     }
 
-    #mainView, #archiveView, #settingsView {
+    .view {
       display: none;
     }
 
-    #mainView.active, #archiveView.active, #settingsView.active {
+    .view.active {
       display: block;
     }
 
@@ -829,6 +272,11 @@ const inputStyle = { width: '100%', padding: '10px', marginBottom: '10px', ba<!D
       padding: 12px;
       border-radius: 4px;
       margin-bottom: 16px;
+      display: none;
+    }
+
+    .success-message.active {
+      display: block;
     }
   </style>
 </head>
@@ -839,19 +287,27 @@ const inputStyle = { width: '100%', padding: '10px', marginBottom: '10px', ba<!D
       <h1>NeedinAd</h1>
       <p class="subtitle" id="subtitle">Savol bitta. Fikrlar ko'p.</p>
       <div class="header-buttons">
-        <button class="btn" id="mainViewBtn">🏠 <span data-lang="home">Bosh sahifa</span></button>
-        <button class="btn" id="archiveViewBtn">📚 <span data-lang="archive">Arxiv</span></button>
-        <button class="btn" id="settingsViewBtn">⚙️ <span data-lang="settings">Sozlamalar</span></button>
+        <button class="btn" onclick="switchView('main')">
+          🏠 <span data-lang="home">Bosh sahifa</span>
+        </button>
+        <button class="btn" onclick="switchView('archive')">
+          📚 <span data-lang="archive">Arxiv</span>
+        </button>
+        <button class="btn" onclick="switchView('settings')">
+          ⚙️ <span data-lang="settings">Sozlamalar</span>
+        </button>
       </div>
     </div>
 
     <!-- Main View -->
-    <div id="mainView" class="active">
+    <div id="mainView" class="view active">
       <!-- Owner: Add Question -->
       <div class="box">
         <h3><span data-lang="postQuestion">Savol joylash</span> (faqat egasi) 🔐</h3>
-        <input type="text" id="questionInput" data-placeholder="questionPlaceholder" placeholder="Savolni yozing..." />
-        <button class="btn-primary" id="addQuestionBtn" data-lang="postQuestionBtn">Savolni joylash</button>
+        <input type="text" id="questionInput" placeholder="Savolni yozing...">
+        <button class="btn-primary" onclick="showPasswordModal()">
+          <span data-lang="postQuestionBtn">Savolni joylash</span>
+        </button>
       </div>
 
       <!-- Current Question -->
@@ -860,18 +316,389 @@ const inputStyle = { width: '100%', padding: '10px', marginBottom: '10px', ba<!D
         <div id="currentQuestion">
           <p class="empty-state" data-lang="noQuestion">Hozirda savol yo'q</p>
         </div>
-        <button class="btn-delete" id="deleteQuestionBtn" style="display: none;" data-lang="deleteQuestion">
-          🗑️ Savolni o'chirish
+        <button class="btn-delete" id="deleteQuestionBtn" style="display: none;" onclick="showDeleteModal()">
+          🗑️ <span data-lang="deleteQuestion">Savolni o'chirish</span>
         </button>
       </div>
 
       <!-- Add Answer -->
       <div class="box">
         <h3>💬 <span data-lang="anonymousAnswer">Anonim javob qoldirish</span></h3>
-        <textarea id="answerInput" data-placeholder="answerPlaceholder" placeholder="Fikringizni yozing..."></textarea>
-        <button class="btn-primary" id="addAnswerBtn" data-lang="sendAnswer">Javob yuborish</button>
+        <textarea id="answerInput" placeholder="Fikringizni yozing..."></textarea>
+        <button class="btn-primary" onclick="addAnswer()">
+          <span data-lang="sendAnswer">Javob yuborish</span>
+        </button>
       </div>
 
+      <!-- Answers -->
+      <div class="box">
+        <h3>💭 <span data-lang="answers">Javoblar</span> <span id="answerCount">(0)</span></h3>
+        <div id="answersList">
+          <p class="empty-state" data-lang="noAnswers">Hozircha javoblar yo'q. Birinchi bo'lib javob qoldiring!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Archive View -->
+    <div id="archiveView" class="view">
+      <div class="box">
+        <h2 style="margin: 0 0 20px 0; font-size: 24px;">
+          📚 <span data-lang="archiveTitle">Arxiv</span>
+        </h2>
+        <div id="archiveList">
+          <p class="empty-state" data-lang="emptyArchive">Arxivda hech narsa yo'q</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings View -->
+    <div id="settingsView" class="view">
+      <div class="box">
+        <h2 style="margin: 0 0 20px 0; font-size: 24px;">
+          ⚙️ <span data-lang="settingsTitle">Sozlamalar</span>
+        </h2>
+        
+        <div id="successMessage" class="success-message">
+          <span data-lang="changesSaved">O'zgarishlar saqlandi!</span>
+        </div>
+
+        <!-- Language Selection -->
+        <div class="settings-item">
+          <label><span data-lang="selectLanguage">Tilni tanlang:</span></label>
+          <select id="languageSelect" onchange="changeLanguage(this.value)">
+            <option value="uz">O'zbek</option>
+            <option value="en">English</option>
+            <option value="ru">Русский</option>
+          </select>
+        </div>
+
+        <!-- Change Password -->
+        <div class="settings-item">
+          <label><span data-lang="changePassword">Parolni o'zgartirish (faqat egasi):</span></label>
+          <input type="password" id="oldPassword" placeholder="Hozirgi parol">
+          <input type="password" id="newPassword" placeholder="Yangi parol">
+          <input type="password" id="confirmPassword" placeholder="Parolni tasdiqlang">
+          <button class="btn-primary" onclick="changePassword()">
+            <span data-lang="changePasswordBtn">Parolni o'zgartirish</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="passwordModal" class="modal">
+      <div class="modal-content">
+        <h3 data-lang="enterPassword">Parolni kiriting</h3>
+        <input type="password" id="passwordInput" placeholder="Ega paroli..." onkeypress="if(event.key==='Enter')addQuestion()">
+        <div class="modal-buttons">
+          <button class="btn-success" onclick="addQuestion()">
+            <span data-lang="confirm">Tasdiqlash</span>
+          </button>
+          <button class="btn-danger" onclick="hidePasswordModal()">
+            <span data-lang="cancel">Bekor qilish</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+      <div class="modal-content">
+        <h3 data-lang="confirmDelete">Savolni o'chirishni tasdiqlaysizmi?</h3>
+        <p style="color: #aaa; margin-bottom: 16px;" data-lang="deleteWarning">Bu amalni qaytarib bo'lmaydi!</p>
+        <input type="password" id="deletePasswordInput" placeholder="Ega paroli..." onkeypress="if(event.key==='Enter')deleteQuestion()">
+        <div class="modal-buttons">
+          <button class="btn-danger" onclick="deleteQuestion()">
+            <span data-lang="delete">O'chirish</span>
+          </button>
+          <button class="btn-success" onclick="hideDeleteModal()">
+            <span data-lang="cancel">Bekor qilish</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Translations
+    const translations = {
+      uz: {
+        subtitle: "Savol bitta. Fikrlar ko'p.",
+        home: "Bosh sahifa",
+        archive: "Arxiv",
+        settings: "Sozlamalar",
+        postQuestion: "Savol joylash",
+        postQuestionBtn: "Savolni joylash",
+        currentQuestion: "Hozirgi Savol",
+        noQuestion: "Hozirda savol yo'q",
+        deleteQuestion: "Savolni o'chirish",
+        anonymousAnswer: "Anonim javob qoldirish",
+        sendAnswer: "Javob yuborish",
+        answers: "Javoblar",
+        noAnswers: "Hozircha javoblar yo'q. Birinchi bo'lib javob qoldiring!",
+        archiveTitle: "Arxiv",
+        emptyArchive: "Arxivda hech narsa yo'q",
+        settingsTitle: "Sozlamalar",
+        changesSaved: "O'zgarishlar saqlandi!",
+        selectLanguage: "Tilni tanlang:",
+        changePassword: "Parolni o'zgartirish (faqat egasi):",
+        changePasswordBtn: "Parolni o'zgartirish",
+        enterPassword: "Parolni kiriting",
+        confirm: "Tasdiqlash",
+        cancel: "Bekor qilish",
+        confirmDelete: "Savolni o'chirishni tasdiqlaysizmi?",
+        deleteWarning: "Bu amalni qaytarib bo'lmaydi!",
+        delete: "O'chirish",
+        answersCount: "javob"
+      },
+      en: {
+        subtitle: "One question. Many thoughts.",
+        home: "Home",
+        archive: "Archive",
+        settings: "Settings",
+        postQuestion: "Post Question",
+        postQuestionBtn: "Post Question",
+        currentQuestion: "Current Question",
+        noQuestion: "No question yet",
+        deleteQuestion: "Delete Question",
+        anonymousAnswer: "Leave Anonymous Answer",
+        sendAnswer: "Send Answer",
+        answers: "Answers",
+        noAnswers: "No answers yet. Be the first!",
+        archiveTitle: "Archive",
+        emptyArchive: "Archive is empty",
+        settingsTitle: "Settings",
+        changesSaved: "Changes saved!",
+        selectLanguage: "Select Language:",
+        changePassword: "Change Password (owner only):",
+        changePasswordBtn: "Change Password",
+        enterPassword: "Enter Password",
+        confirm: "Confirm",
+        cancel: "Cancel",
+        confirmDelete: "Confirm deletion?",
+        deleteWarning: "This cannot be undone!",
+        delete: "Delete",
+        answersCount: "answers"
+      },
+      ru: {
+        subtitle: "Один вопрос. Много мыслей.",
+        home: "Главная",
+        archive: "Архив",
+        settings: "Настройки",
+        postQuestion: "Опубликовать",
+        postQuestionBtn: "Опубликовать",
+        currentQuestion: "Текущий вопрос",
+        noQuestion: "Нет вопроса",
+        deleteQuestion: "Удалить вопрос",
+        anonymousAnswer: "Анонимный ответ",
+        sendAnswer: "Отправить",
+        answers: "Ответы",
+        noAnswers: "Нет ответов. Будьте первым!",
+        archiveTitle: "Архив",
+        emptyArchive: "Архив пуст",
+        settingsTitle: "Настройки",
+        changesSaved: "Изменения сохранены!",
+        selectLanguage: "Выберите язык:",
+        changePassword: "Изменить пароль:",
+        changePasswordBtn: "Изменить пароль",
+        enterPassword: "Введите пароль",
+        confirm: "Подтвердить",
+        cancel: "Отмена",
+        confirmDelete: "Удалить вопрос?",
+        deleteWarning: "Это действие нельзя отменить!",
+        delete: "Удалить",
+        answersCount: "ответов"
+      }
+    };
+
+    // Global variables
+    let OWNER_PASSWORD = localStorage.getItem('needinad_password') || 'owner123';
+    let currentLang = localStorage.getItem('needinad_language') || 'uz';
+
+    // Get data from localStorage
+    function getData() {
+      const current = localStorage.getItem('needinad_current');
+      const archive = localStorage.getItem('needinad_archive');
+      return {
+        current: current ? JSON.parse(current) : null,
+        archive: archive ? JSON.parse(archive) : []
+      };
+    }
+
+    // Save data to localStorage
+    function saveData(current, archive) {
+      if (current !== undefined) {
+        if (current === null) {
+          localStorage.removeItem('needinad_current');
+        } else {
+          localStorage.setItem('needinad_current', JSON.stringify(current));
+        }
+      }
+      if (archive) {
+        localStorage.setItem('needinad_archive', JSON.stringify(archive));
+      }
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Apply language
+    function applyLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('needinad_language', lang);
+      
+      document.getElementById('subtitle').textContent = translations[lang].subtitle;
+      
+      document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        if (translations[lang][key]) {
+          el.textContent = translations[lang][key];
+        }
+      });
+
+      // Update placeholders
+      document.getElementById('questionInput').placeholder = translations[lang].postQuestion + '...';
+      document.getElementById('answerInput').placeholder = translations[lang].anonymousAnswer + '...';
+      document.getElementById('passwordInput').placeholder = translations[lang].enterPassword + '...';
+      document.getElementById('deletePasswordInput').placeholder = translations[lang].enterPassword + '...';
+      document.getElementById('oldPassword').placeholder = translations[lang].changePassword;
+      document.getElementById('newPassword').placeholder = 'Yangi parol';
+      document.getElementById('confirmPassword').placeholder = 'Tasdiqlang';
+    }
+
+    // Switch view
+    function switchView(view) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      
+      if (view === 'main') {
+        document.getElementById('mainView').classList.add('active');
+        render();
+      } else if (view === 'archive') {
+        document.getElementById('archiveView').classList.add('active');
+        renderArchive();
+      } else if (view === 'settings') {
+        document.getElementById('settingsView').classList.add('active');
+      }
+    }
+
+    // Change language
+    function changeLanguage(lang) {
+      applyLanguage(lang);
+      render();
+      renderArchive();
+    }
+
+    // Password modal
+    function showPasswordModal() {
+      const question = document.getElementById('questionInput').value.trim();
+      if (!question) {
+        alert(translations[currentLang].postQuestion + '!');
+        return;
+      }
+      document.getElementById('passwordModal').classList.add('active');
+    }
+
+    function hidePasswordModal() {
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('passwordModal').classList.remove('active');
+    }
+
+    // Delete modal
+    function showDeleteModal() {
+      document.getElementById('deleteModal').classList.add('active');
+    }
+
+    function hideDeleteModal() {
+      document.getElementById('deletePasswordInput').value = '';
+      document.getElementById('deleteModal').classList.remove('active');
+    }
+
+    // Add question
+    function addQuestion() {
+      const password = document.getElementById('passwordInput').value;
+      const question = document.getElementById('questionInput').value.trim();
+
+      if (password !== OWNER_PASSWORD) {
+        alert(currentLang === 'uz' ? "Parol noto'g'ri!" : currentLang === 'en' ? "Incorrect password!" : "Неверный пароль!");
+        document.getElementById('passwordInput').value = '';
+        return;
+      }
+
+      const data = getData();
+      
+      // Archive current question if exists
+      if (data.current && data.current.question) {
+        data.archive.unshift({
+          id: Date.now(),
+          question: data.current.question,
+          answers: data.current.answers || [],
+          date: new Date().toLocaleDateString()
+        });
+      }
+
+      // Save new question
+      const newCurrent = {
+        question: question,
+        answers: []
+      };
+
+      saveData(newCurrent, data.archive);
+
+      document.getElementById('questionInput').value = '';
+      document.getElementById('passwordInput').value = '';
+      document.getElementById('passwordModal').classList.remove('active');
+      
+      alert(currentLang === 'uz' ? 'Savol joylandi!' : currentLang === 'en' ? 'Question posted!' : 'Вопрос опубликован!');
+      render();
+    }
+
+    // Delete question
+    function deleteQuestion() {
+      const password = document.getElementById('deletePasswordInput').value;
+
+      if (password !== OWNER_PASSWORD) {
+        alert(currentLang === 'uz' ? "Parol noto'g'ri!" : currentLang === 'en' ? "Incorrect password!" : "Неверный пароль!");
+        document.getElementById('deletePasswordInput').value = '';
+        return;
+      }
+
+      const data = getData();
+      
+      // Archive before deleting
+      if (data.current && data.current.question) {
+        data.archive.unshift({
+          id: Date.now(),
+          question: data.current.question,
+          answers: data.current.answers || [],
+          date: new Date().toLocaleDateString()
+        });
+      }
+
+      saveData(null, data.archive);
+
+      document.getElementById('deletePasswordInput').value = '';
+      document.getElementById('deleteModal').classList.remove('active');
+      
+      alert(currentLang === 'uz' ? "Savol o'chirildi!" : currentLang === 'en' ? "Question deleted!" : "Вопрос удален!");
+      render();
+    }
+
+    // Add answer
+    function addAnswer() {
+      const answer = document.getElementById('answerInput').value.trim();
+      if (!answer) {
+        alert(translations[currentLang].sendAnswer + '!');
+        return;
+      }
+
+      const data = getData();
+      if (!data.cur
+      margin-bottom: 6px;
+      
       <!-- Answers -->
       <div class="box">
         <h3>💭 <span data-lang="answers">Javoblar</span> <span id="answerCount">(0)</span></h3>
