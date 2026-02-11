@@ -1,134 +1,614 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="UTF-8" />
-  <title>NeedinAd</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeedinAd - Anonymous Q&A</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f6f7f9; margin:0; padding:20px; }
-    h1 { text-align:center; }
-    .box { background:#fff; padding:15px; border-radius:8px; margin-bottom:15px; }
-    input, select, textarea, button {
-      width:100%; padding:10px; margin:5px 0; border-radius:6px; border:1px solid #ccc;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    button { cursor:pointer; background:#4f46e5; color:#fff; border:none; }
-    button.danger { background:#dc2626; }
-    .answer { border-top:1px solid #eee; padding:8px 0; }
-    .hidden { display:none; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #aaa;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      padding: 10px 20px;
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .nav-btn:hover {
+      background: #444;
+    }
+
+    .section {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .section h2 {
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #222;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 5px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .primary-btn {
+      width: 100%;
+      padding: 12px;
+      background: #fff;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .primary-btn:hover {
+      background: #eee;
+    }
+
+    .delete-btn {
+      padding: 10px 20px;
+      background: #f44336;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .delete-btn:hover {
+      background: #d32f2f;
+    }
+
+    .answer-item {
+      background: #222;
+      padding: 12px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      word-wrap: break-word;
+    }
+
+    .archive-item {
+      background: #222;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+    }
+
+    .archive-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 10px;
+    }
+
+    .archive-question {
+      color: #4CAF50;
+      font-size: 16px;
+      font-weight: bold;
+      flex: 1;
+    }
+
+    .archive-date {
+      color: #888;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+
+    .archive-answers {
+      border-left: 3px solid #333;
+      padding-left: 15px;
+      margin-top: 10px;
+    }
+
+    .archive-answer {
+      background: #1a1a1a;
+      padding: 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #1a1a1a;
+      padding: 25px;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .modal-content h3 {
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .confirm-btn {
+      background: #4CAF50;
+      color: #fff;
+    }
+
+    .cancel-btn {
+      background: #f44336;
+      color: #fff;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .empty-text {
+      color: #666;
+      font-style: italic;
+    }
+
+    .success-msg {
+      background: #4CAF50;
+      padding: 12px;
+      border-radius: 5px;
+      margin-bottom: 15px;
+      display: none;
+    }
+
+    .success-msg.show {
+      display: block;
+    }
+
+    .question-box {
+      background: #222;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .small-delete-btn {
+      padding: 6px 12px;
+      background: #f44336;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    .small-delete-btn:hover {
+      background: #d32f2f;
+    }
   </style>
 </head>
 <body>
+  <div class="container">
+    <header>
+      <h1>NeedinAd</h1>
+      <p class="subtitle" id="subtitle">Savol bitta. Fikrlar ko'p.</p>
+      <div class="nav-buttons">
+        <button class="nav-btn" onclick="showView('main')" id="nav-main">🏠 Bosh sahifa</button>
+        <button class="nav-btn" onclick="showView('archive')" id="nav-archive">📚 Arxiv</button>
+        <button class="nav-btn" onclick="showView('settings')" id="nav-settings">⚙️ Sozlamalar</button>
+      </div>
+    </header>
 
-<h1>NeedinAd</h1>
+    <!-- Main View -->
+    <div id="view-main" class="view active">
+      <div class="section">
+        <h2 id="label-owner-post">Savol joylash (faqat egasi) 🔐</h2>
+        <input type="text" id="input-question" placeholder="Savolni yozing...">
+        <button class="primary-btn" onclick="openPostModal()" id="btn-post">Savolni joylash</button>
+      </div>
 
-<div class="box">
-  <b>Til:</b>
-  <select id="langSelect">
-    <option value="uz">O‘zbek</option>
-    <option value="en">English</option>
-    <option value="ru">Русский</option>
-  </select>
-</div>
+      <div class="section">
+        <h2 id="label-current">📌 Hozirgi Savol</h2>
+        <div id="current-question-display">
+          <p class="empty-text" id="text-no-question">Hozirda savol yo'q</p>
+        </div>
+        <button class="delete-btn" id="btn-delete-current" style="display:none;" onclick="openDeleteModal()">
+          🗑️ <span id="text-delete-question">Savolni o'chirish</span>
+        </button>
+      </div>
 
-<div class="box">
-  <h3>🔒 Savol joylash (faqat egasi)</h3>
-  <input id="ownerPassword" type="password" placeholder="Ega paroli">
-  <textarea id="questionInput" placeholder="Savolni yozing..."></textarea>
-  <button onclick="postQuestion()">Joylash</button>
-</div>
+      <div class="section">
+        <h2 id="label-answer">💬 Anonim javob qoldirish</h2>
+        <textarea id="input-answer" placeholder="Fikringizni yozing..."></textarea>
+        <button class="primary-btn" onclick="submitAnswer()" id="btn-submit-answer">Javob yuborish</button>
+      </div>
 
-<div class="box">
-  <h3>📌 Joriy savol</h3>
-  <div id="currentQuestion">Savol yo‘q</div>
-  <input id="deletePassword" type="password" placeholder="Ega paroli">
-  <button class="danger" onclick="deleteQuestion()">Savolni o‘chirish</button>
-</div>
+      <div class="section">
+        <h2><span id="label-answers">💭 Javoblar</span> <span id="answer-count">(0)</span></h2>
+        <div id="answers-list">
+          <p class="empty-text" id="text-no-answers">Hozircha javoblar yo'q</p>
+        </div>
+      </div>
+    </div>
 
-<div class="box">
-  <h3>💬 Anonim javoblar</h3>
-  <textarea id="answerInput" placeholder="Javob yozing..."></textarea>
-  <button onclick="addAnswer()">Yuborish</button>
-  <div id="answers"></div>
-</div>
+    <!-- Archive View -->
+    <div id="view-archive" class="view">
+      <div class="section">
+        <h2 id="label-archive-title">📚 Arxiv</h2>
+        <div id="archive-list">
+          <p class="empty-text" id="text-empty-archive">Arxivda hech narsa yo'q</p>
+        </div>
+      </div>
+    </div>
 
-<div class="box">
-  <h3>📁 Arxiv</h3>
-  <div id="archive"></div>
-</div>
+    <!-- Settings View -->
+    <div id="view-settings" class="view">
+      <div class="section">
+        <h2 id="label-settings-title">⚙️ Sozlamalar</h2>
+        
+        <div class="success-msg" id="success-message">
+          <span id="text-saved">O'zgarishlar saqlandi!</span>
+        </div>
 
-<div class="box">
-  <h3>⚙️ Sozlamalar</h3>
-  <input id="oldPass" type="password" placeholder="Hozirgi parol">
-  <input id="newPass" type="password" placeholder="Yangi parol">
-  <button onclick="changePassword()">Parolni o‘zgartirish</button>
-</div>
+        <h3 id="label-lang">Tilni tanlang:</h3>
+        <select id="select-language" onchange="changeLanguage()">
+          <option value="uz">O'zbek</option>
+          <option value="en">English</option>
+          <option value="ru">Русский</option>
+        </select>
 
-<script>
-  const DEFAULT_PASSWORD = "1234";
+        <h3 style="margin-top:20px;" id="label-change-pass">Parolni o'zgartirish:</h3>
+        <input type="password" id="input-old-pass" placeholder="Hozirgi parol">
+        <input type="password" id="input-new-pass" placeholder="Yangi parol">
+        <input type="password" id="input-confirm-pass" placeholder="Parolni tasdiqlang">
+        <button class="primary-btn" onclick="changePassword()" id="btn-change-pass">Parolni o'zgartirish</button>
+      </div>
+    </div>
 
-  if (!localStorage.getItem("password")) {
-    localStorage.setItem("password", DEFAULT_PASSWORD);
-  }
+    <!-- Post Question Modal -->
+    <div id="modal-post" class="modal">
+      <div class="modal-content">
+        <h3 id="modal-post-title">Parolni kiriting</h3>
+        <input type="password" id="modal-post-password" placeholder="Ega paroli...">
+        <div class="modal-buttons">
+          <button class="modal-btn confirm-btn" onclick="postQuestion()" id="modal-post-confirm">Tasdiqlash</button>
+          <button class="modal-btn cancel-btn" onclick="closePostModal()" id="modal-post-cancel">Bekor qilish</button>
+        </div>
+      </div>
+    </div>
 
-  function postQuestion() {
-    const pass = ownerPassword.value;
-    if (pass !== localStorage.getItem("password")) {
-      alert("Parol noto‘g‘ri");
-      return;
+    <!-- Delete Question Modal -->
+    <div id="modal-delete" class="modal">
+      <div class="modal-content">
+        <h3 id="modal-delete-title">Savolni o'chirishni tasdiqlaysizmi?</h3>
+        <p style="color:#aaa;margin-bottom:10px;" id="modal-delete-warning">Bu amalni qaytarib bo'lmaydi!</p>
+        <input type="password" id="modal-delete-password" placeholder="Ega paroli...">
+        <div class="modal-buttons">
+          <button class="modal-btn cancel-btn" onclick="deleteCurrentQuestion()" id="modal-delete-confirm">O'chirish</button>
+          <button class="modal-btn confirm-btn" onclick="closeDeleteModal()" id="modal-delete-cancel">Bekor qilish</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Archive Item Modal -->
+    <div id="modal-delete-archive" class="modal">
+      <div class="modal-content">
+        <h3 id="modal-archive-title">Arxiv elementini o'chirish?</h3>
+        <p style="color:#aaa;margin-bottom:10px;" id="modal-archive-warning">Bu amalni qaytarib bo'lmaydi!</p>
+        <input type="password" id="modal-archive-password" placeholder="Ega paroli...">
+        <div class="modal-buttons">
+          <button class="modal-btn cancel-btn" onclick="deleteArchiveItem()" id="modal-archive-confirm">O'chirish</button>
+          <button class="modal-btn confirm-btn" onclick="closeArchiveModal()" id="modal-archive-cancel">Bekor qilish</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var OWNER_PASSWORD = localStorage.getItem('needinad_password') || 'owner123';
+    var CURRENT_LANG = localStorage.getItem('needinad_lang') || 'uz';
+    var archiveItemToDelete = null;
+
+    var TRANSLATIONS = {
+      uz: {
+        subtitle: "Savol bitta. Fikrlar ko'p.",
+        navMain: "🏠 Bosh sahifa",
+        navArchive: "📚 Arxiv",
+        navSettings: "⚙️ Sozlamalar",
+        labelOwnerPost: "Savol joylash (faqat egasi) 🔐",
+        btnPost: "Savolni joylash",
+        labelCurrent: "📌 Hozirgi Savol",
+        textNoQuestion: "Hozirda savol yo'q",
+        textDeleteQuestion: "Savolni o'chirish",
+        labelAnswer: "💬 Anonim javob qoldirish",
+        btnSubmitAnswer: "Javob yuborish",
+        labelAnswers: "💭 Javoblar",
+        textNoAnswers: "Hozircha javoblar yo'q",
+        labelArchiveTitle: "📚 Arxiv",
+        textEmptyArchive: "Arxivda hech narsa yo'q",
+        labelSettingsTitle: "⚙️ Sozlamalar",
+        textSaved: "O'zgarishlar saqlandi!",
+        labelLang: "Tilni tanlang:",
+        labelChangePass: "Parolni o'zgartirish:",
+        btnChangePass: "Parolni o'zgartirish",
+        modalPostTitle: "Parolni kiriting",
+        modalPostConfirm: "Tasdiqlash",
+        modalPostCancel: "Bekor qilish",
+        modalDeleteTitle: "Savolni o'chirishni tasdiqlaysizmi?",
+        modalDeleteWarning: "Bu amalni qaytarib bo'lmaydi!",
+        modalDeleteConfirm: "O'chirish",
+        modalDeleteCancel: "Bekor qilish",
+        modalArchiveTitle: "Arxiv elementini o'chirish?",
+        modalArchiveWarning: "Bu amalni qaytarib bo'lmaydi!",
+        modalArchiveConfirm: "O'chirish",
+        modalArchiveCancel: "Bekor qilish",
+        alertWrongPass: "Parol noto'g'ri!",
+        alertQuestionPosted: "Savol joylandi!",
+        alertQuestionDeleted: "Savol o'chirildi!",
+        alertAnswerSent: "Javob yuborildi!",
+        alertFillFields: "Barcha maydonlarni to'ldiring",
+        alertWrongOldPass: "Hozirgi parol noto'g'ri",
+        alertPassMismatch: "Parollar mos kelmadi",
+        alertPassShort: "Parol 4+ belgidan iborat bo'lsin",
+        alertArchiveDeleted: "Arxiv elementi o'chirildi!",
+        answersWord: "javob"
+      },
+      en: {
+        subtitle: "One question. Many thoughts.",
+        navMain: "🏠 Home",
+        navArchive: "📚 Archive",
+        navSettings: "⚙️ Settings",
+        labelOwnerPost: "Post Question (owner only) 🔐",
+        btnPost: "Post Question",
+        labelCurrent: "📌 Current Question",
+        textNoQuestion: "No question yet",
+        textDeleteQuestion: "Delete Question",
+        labelAnswer: "💬 Leave Anonymous Answer",
+        btnSubmitAnswer: "Send Answer",
+        labelAnswers: "💭 Answers",
+        textNoAnswers: "No answers yet",
+        labelArchiveTitle: "📚 Archive",
+        textEmptyArchive: "Archive is empty",
+        labelSettingsTitle: "⚙️ Settings",
+        textSaved: "Changes saved!",
+        labelLang: "Select Language:",
+        labelChangePass: "Change Password:",
+        btnChangePass: "Change Password",
+        modalPostTitle: "Enter Password",
+        modalPostConfirm: "Confirm",
+        modalPostCancel: "Cancel",
+        modalDeleteTitle: "Confirm deletion?",
+        modalDeleteWarning: "This cannot be undone!",
+        modalDeleteConfirm: "Delete",
+        modalDeleteCancel: "Cancel",
+        modalArchiveTitle: "Delete archive item?",
+        modalArchiveWarning: "This cannot be undone!",
+        modalArchiveConfirm: "Delete",
+        modalArchiveCancel: "Cancel",
+        alertWrongPass: "Incorrect password!",
+        alertQuestionPosted: "Question posted!",
+        alertQuestionDeleted: "Question deleted!",
+        alertAnswerSent: "Answer sent!",
+        alertFillFields: "Fill all fields",
+        alertWrongOldPass: "Current password incorrect",
+        alertPassMismatch: "Passwords don't match",
+        alertPassShort: "Password must be 4+ characters",
+        alertArchiveDeleted: "Archive item deleted!",
+        answersWord: "answers"
+      },
+      ru: {
+        subtitle: "Один вопрос. Много мыслей.",
+        navMain: "🏠 Главная",
+        navArchive: "📚 Архив",
+        navSettings: "⚙️ Настройки",
+        labelOwnerPost: "Опубликовать вопрос (только владелец) 🔐",
+        btnPost: "Опубликовать",
+        labelCurrent: "📌 Текущий вопрос",
+        textNoQuestion: "Нет вопроса",
+        textDeleteQuestion: "Удалить вопрос",
+        labelAnswer: "💬 Анонимный ответ",
+        btnSubmitAnswer: "Отправить",
+        labelAnswers: "💭 Ответы",
+        textNoAnswers: "Нет ответов",
+        labelArchiveTitle: "📚 Архив",
+        textEmptyArchive: "Архив пуст",
+        labelSettingsTitle: "⚙️ Настройки",
+        textSaved: "Изменения сохранены!",
+        labelLang: "Выберите язык:",
+        labelChangePass: "Изменить пароль:",
+        btnChangePass: "Изменить пароль",
+        modalPostTitle: "Введите пароль",
+        modalPostConfirm: "Подтвердить",
+        modalPostCancel: "Отмена",
+        modalDeleteTitle: "Удалить вопрос?",
+        modalDeleteWarning: "Это действие нельзя отменить!",
+        modalDeleteConfirm: "Удалить",
+        modalDeleteCancel: "Отмена",
+        modalArchiveTitle: "Удалить из архива?",
+        modalArchiveWarning: "Это действие нельзя отменить!",
+        modalArchiveConfirm: "Удалить",
+        modalArchiveCancel: "Отмена",
+        alertWrongPass: "Неверный пароль!",
+        alertQuestionPosted: "Вопрос опубликован!",
+        alertQuestionDeleted: "Вопрос удален!",
+        alertAnswerSent: "Ответ отправлен!",
+        alertFillFields: "Заполните все поля",
+        alertWrongOldPass: "Текущий пароль неверен",
+        alertPassMismatch: "Пароли не совпадают",
+        alertPassShort: "Пароль должен быть 4+ символов",
+        alertArchiveDeleted: "Элемент архива удален!",
+        answersWord: "ответов"
+      }
+    };
+
+    function getData() {
+      var current = localStorage.getItem('needinad_current');
+      var archive = localStorage.getItem('needinad_archive');
+      return {
+        current: current ? JSON.parse(current) : null,
+        archive: archive ? JSON.parse(archive) : []
+      };
     }
-    localStorage.setItem("question", questionInput.value);
-    localStorage.setItem("answers", JSON.stringify([]));
-    render();
-  }
 
-  function deleteQuestion() {
-    const pass = deletePassword.value;
-    if (pass !== localStorage.getItem("password")) {
-      alert("Parol noto‘g‘ri");
-      return;
+    function saveData(current, archive) {
+      if (current !== undefined) {
+        if (current === null) {
+          localStorage.removeItem('needinad_current');
+        } else {
+          localStorage.setItem('needinad_current', JSON.stringify(current));
+        }
+      }
+      if (archive !== undefined) {
+        localStorage.setItem('needinad_archive', JSON.stringify(archive));
+      }
     }
-    const archive = JSON.parse(localStorage.getItem("archive") || "[]");
-    archive.unshift({
-      question: localStorage.getItem("question"),
-      answers: JSON.parse(localStorage.getItem("answers") || "[]")
-    });
-    localStorage.setItem("archive", JSON.stringify(archive));
-    localStorage.removeItem("question");
-    localStorage.removeItem("answers");
-    render();
-  }
 
-  function addAnswer() {
-    const answers = JSON.parse(localStorage.getItem("answers") || "[]");
-    answers.push(answerInput.value);
-    localStorage.setItem("answers", JSON.stringify(answers));
-    render();
-  }
-
-  function changePassword() {
-    if (oldPass.value !== localStorage.getItem("password")) {
-      alert("Parol noto‘g‘ri");
-      return;
+    function escapeHTML(text) {
+      var div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
-    localStorage.setItem("password", newPass.value);
-    alert("Parol o‘zgartirildi");
-  }
 
-  function render() {
-    currentQuestion.innerText = localStorage.getItem("question") || "Savol yo‘q";
-    answers.innerHTML = "";
-    (JSON.parse(localStorage.getItem("answers") || "[]")).forEach(a => {
-      answers.innerHTML += `<div class="answer">${a}</div>`;
-    });
+    function applyTranslations() {
+      var t = TRANSLATIONS[CURRENT_LANG];
+      document.getElementById('subtitle').textContent = t.subtitle;
+      document.getElementById('nav-main').textContent = t.navMain;
+      document.getElementById('nav-archive').textContent = t.navArchive;
+      document.getElementById('nav-settings').textContent = t.navSettings;
+      document.getElementById('label-owner-post').textContent = t.labelOwnerPost;
+      document.getElementById('btn-post').textContent = t.btnPost;
+      document.getElementById('label-current').textContent = t.labelCurrent;
+      document.getElementById('text-no-question').textContent = t.textNoQuestion;
+      document.getElementById('text-delete-question').textContent = t.textDeleteQuestion;
+      document.getElementById('label-answer').textContent = t.labelAnswer;
+      document.getElementById('btn-submit-answer').textContent = t.btnSubmitAnswer;
+      document.getElementById('label-answers').textContent = t.labelAnswers;
+      document.getElementById('text-no-answers').textContent = t.textNoAnswers;
+      document.getElementById('label-archive-title').textContent = t.labelArchiveTitle;
+      document.getElementById('text-empty-archive').textContent = t.textEmptyArchive;
+      document.getElementById('label-settings-title').textContent = t.labelSettingsTitle;
+      document.getElementById('text-saved').textContent = t.textSaved;
+      document.getElementById('label-lang').textContent = t.labelLang;
+      document.getElementById('label-change-pass').textContent = t.labelChangePass;
+      document.getElementById('btn-change-pass').textContent = t.btnChangePass;
+      document.getElementById('modal-post-title').textContent = t.modalPostTitle;
+      document.getElementById('modal-post-confirm').textContent = t.modalPostConfirm;
+      document.getElementById('modal-post-cancel').textContent = t.modalPostCancel;
+      document.getElementById('modal-delete-title').textContent = t.modalDeleteTitle;
+      document.getElementById('modal-delete-warning').textContent = t.modalDeleteWarning;
+      document.getElementById('modal-delete-confirm').textContent = t.modalDeleteConfirm;
+      document.getElementById('modal-delete-cancel').textContent = t.modalDeleteCancel;
+      document.getElementById('modal-archive-title').textContent = t.modalArchiveTitle;
+      document.getElementById('modal-archive-warning').textContent = t.modalArchiveWarning;
+      document.getElementById('modal-archive-confirm').textContent = t.modalArchiveConfirm;
+      document.getElementById('modal-archive-cancel').textContent = t.modalArchiveCancel;
+    }
 
-    archive.innerHTML = "";
-    (JSON.parse(localStorage.getItem("archive") || "[]")).forEach(a => {
-      archive.innerHTML += `<div class="answer"><b>${a.question}</b></div>`;
-    });
-  }
+    function showView(viewName) {
+      var views = document.querySelectorAll('.view');
+      for (var i = 0; i < views.length; i++) {
+        views[i].classList.remove('active');
+      }
+      
+      if (viewName === 'main') {
+        document.getElementById('view-main').classList.add('active');
+        renderMain();
+      } else if (viewName === 'archive') {
+        document.getElementById('view-archive').classList.add('active');
+        renderArchive();
+      } else if (viewName === 'settings') {
+        document.getElementById('view-settings').classList.add('active');
+      }
+    }
 
-  render();
-</script>
-
-</body>
-</html>
+    function openPostModal() {
+      var question = document.getElementById('input-question').value.trim();
+      if (!question) {
+        alert(TRANSLATIONS[CURRENT_LANG].btnPost + '!');
+      
