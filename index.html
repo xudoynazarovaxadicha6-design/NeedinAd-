@@ -1,854 +1,157 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NeedinAd - Anonymous Q&A</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f0f0f;
-      color: #fff;
-      padding: 20px;
-      min-height: 100vh;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    h1 {
-      font-size: 36px;
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      color: #aaa;
-      margin-bottom: 20px;
-      font-size: 16px;
-    }
-
-    .nav-buttons {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
-    }
-
-    .nav-btn {
-      padding: 10px 20px;
-      background: #333;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .nav-btn:hover {
-      background: #444;
-    }
-
-    .section {
-      background: #1a1a1a;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-
-    .section h2 {
-      margin-bottom: 15px;
-      font-size: 20px;
-    }
-
-    input[type="text"],
-    input[type="password"],
-    textarea,
-    select {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 10px;
-      background: #222;
-      color: #fff;
-      border: 1px solid #333;
-      border-radius: 5px;
-      font-family: Arial, sans-serif;
-      font-size: 14px;
-    }
-
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .primary-btn {
-      width: 100%;
-      padding: 12px;
-      background: #fff;
-      color: #000;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .primary-btn:hover {
-      background: #eee;
-    }
-
-    .delete-btn {
-      padding: 10px 20px;
-      background: #f44336;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 10px;
-      font-size: 14px;
-    }
-
-    .delete-btn:hover {
-      background: #d32f2f;
-    }
-
-    .answer-item {
-      background: #222;
-      padding: 12px;
-      border-radius: 5px;
-      margin-bottom: 10px;
-      word-wrap: break-word;
-    }
-
-    .archive-item {
-      background: #222;
-      padding: 15px;
-      border-radius: 5px;
-      margin-bottom: 15px;
-    }
-
-    .archive-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 10px;
-    }
-
-    .archive-question {
-      color: #4CAF50;
-      font-size: 16px;
-      font-weight: bold;
-      flex: 1;
-    }
-
-    .archive-date {
-      color: #888;
-      font-size: 12px;
-      margin-left: 10px;
-    }
-
-    .archive-answers {
-      border-left: 3px solid #333;
-      padding-left: 15px;
-      margin-top: 10px;
-    }
-
-    .archive-answer {
-      background: #1a1a1a;
-      padding: 8px;
-      border-radius: 4px;
-      margin-bottom: 8px;
-      font-size: 14px;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal.show {
-      display: flex;
-    }
-
-    .modal-content {
-      background: #1a1a1a;
-      padding: 25px;
-      border-radius: 8px;
-      max-width: 400px;
-      width: 90%;
-    }
-
-    .modal-content h3 {
-      margin-bottom: 15px;
-      font-size: 18px;
-    }
-
-    .modal-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-
-    .modal-btn {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .confirm-btn {
-      background: #4CAF50;
-      color: #fff;
-    }
-
-    .cancel-btn {
-      background: #f44336;
-      color: #fff;
-    }
-
-    .view {
-      display: none;
-    }
-
-    .view.active {
-      display: block;
-    }
-
-    .empty-text {
-      color: #666;
-      font-style: italic;
-    }
-
-    .success-msg {
-      background: #4CAF50;
-      padding: 12px;
-      border-radius: 5px;
-      margin-bottom: 15px;
-      display: none;
-    }
-
-    .success-msg.show {
-      display: block;
-    }
-
-    .question-box {
-      background: #222;
-      padding: 15px;
-      border-radius: 5px;
-      margin-bottom: 10px;
-      font-size: 16px;
-      line-height: 1.5;
-    }
-
-    .small-delete-btn {
-      padding: 6px 12px;
-      background: #f44336;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-      margin-top: 10px;
-    }
-
-    .small-delete-btn:hover {
-      background: #d32f2f;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeedinAd</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#0f0f0f;color:#fff;padding:20px;min-height:100vh}
+.container{max-width:800px;margin:0 auto}
+h1{font-size:36px;margin-bottom:10px}
+.subtitle{color:#aaa;margin-bottom:20px}
+.nav{display:flex;gap:10px;margin-bottom:30px;flex-wrap:wrap}
+.btn{padding:10px 20px;background:#333;color:#fff;border:none;border-radius:5px;cursor:pointer}
+.btn:hover{background:#444}
+.section{background:#1a1a1a;padding:20px;border-radius:8px;margin-bottom:20px}
+.section h2{margin-bottom:15px}
+input,textarea,select{width:100%;padding:12px;margin-bottom:10px;background:#222;color:#fff;border:1px solid #333;border-radius:5px;font-family:Arial}
+textarea{min-height:100px;resize:vertical}
+.btn-primary{width:100%;padding:12px;background:#fff;color:#000;border:none;border-radius:5px;font-weight:bold;cursor:pointer}
+.btn-delete{padding:10px 20px;background:#f44336;color:#fff;border:none;border-radius:5px;cursor:pointer;margin-top:10px}
+.answer,.archive-item{background:#222;padding:12px;border-radius:5px;margin-bottom:10px}
+.archive-header{display:flex;justify-content:space-between;margin-bottom:10px}
+.archive-q{color:#4CAF50;font-weight:bold}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:1000;justify-content:center;align-items:center}
+.modal.show{display:flex}
+.modal-content{background:#1a1a1a;padding:25px;border-radius:8px;max-width:400px;width:90%}
+.modal-btns{display:flex;gap:10px;margin-top:15px}
+.modal-btn{flex:1;padding:10px;border:none;border-radius:5px;cursor:pointer;font-weight:bold}
+.confirm{background:#4CAF50;color:#fff}
+.cancel{background:#f44336;color:#fff}
+.view{display:none}
+.view.active{display:block}
+.empty{color:#666;font-style:italic}
+.msg{background:#4CAF50;padding:12px;border-radius:5px;margin-bottom:15px;display:none}
+.msg.show{display:block}
+</style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>NeedinAd</h1>
-      <p class="subtitle" id="subtitle">Savol bitta. Fikrlar ko'p.</p>
-      <div class="nav-buttons">
-        <button class="nav-btn" onclick="showView('main')" id="nav-main">🏠 Bosh sahifa</button>
-        <button class="nav-btn" onclick="showView('archive')" id="nav-archive">📚 Arxiv</button>
-        <button class="nav-btn" onclick="showView('settings')" id="nav-settings">⚙️ Sozlamalar</button>
-      </div>
-    </header>
+<div class="container">
+<h1>NeedinAd</h1>
+<p class="subtitle" id="sub">Savol bitta. Fikrlar ko'p.</p>
+<div class="nav">
+<button class="btn" onclick="view('main')" id="n1">🏠 Bosh sahifa</button>
+<button class="btn" onclick="view('archive')" id="n2">📚 Arxiv</button>
+<button class="btn" onclick="view('settings')" id="n3">⚙️ Sozlamalar</button>
+</div>
 
-    <!-- Main View -->
-    <div id="view-main" class="view active">
-      <div class="section">
-        <h2 id="label-owner-post">Savol joylash (faqat egasi) 🔐</h2>
-        <input type="text" id="input-question" placeholder="Savolni yozing...">
-        <button class="primary-btn" onclick="openPostModal()" id="btn-post">Savolni joylash</button>
-      </div>
+<div id="v1" class="view active">
+<div class="section">
+<h2 id="l1">Savol joylash (egasi) 🔐</h2>
+<input type="text" id="qi" placeholder="Savol...">
+<button class="btn-primary" onclick="openPost()" id="b1">Joylash</button>
+</div>
+<div class="section">
+<h2 id="l2">📌 Hozirgi Savol</h2>
+<div id="cq"><p class="empty" id="e1">Savol yo'q</p></div>
+<button class="btn-delete" id="bd" style="display:none" onclick="openDel()">🗑️ <span id="d1">O'chirish</span></button>
+</div>
+<div class="section">
+<h2 id="l3">💬 Javob qoldirish</h2>
+<textarea id="ai" placeholder="Fikr..."></textarea>
+<button class="btn-primary" onclick="addAns()" id="b2">Yuborish</button>
+</div>
+<div class="section">
+<h2><span id="l4">💭 Javoblar</span> <span id="cnt">(0)</span></h2>
+<div id="al"><p class="empty" id="e2">Javoblar yo'q</p></div>
+</div>
+</div>
 
-      <div class="section">
-        <h2 id="label-current">📌 Hozirgi Savol</h2>
-        <div id="current-question-display">
-          <p class="empty-text" id="text-no-question">Hozirda savol yo'q</p>
-        </div>
-        <button class="delete-btn" id="btn-delete-current" style="display:none;" onclick="openDeleteModal()">
-          🗑️ <span id="text-delete-question">Savolni o'chirish</span>
-        </button>
-      </div>
+<div id="v2" class="view">
+<div class="section">
+<h2 id="l5">📚 Arxiv</h2>
+<div id="arc"><p class="empty" id="e3">Arxiv bo'sh</p></div>
+</div>
+</div>
 
-      <div class="section">
-        <h2 id="label-answer">💬 Anonim javob qoldirish</h2>
-        <textarea id="input-answer" placeholder="Fikringizni yozing..."></textarea>
-        <button class="primary-btn" onclick="submitAnswer()" id="btn-submit-answer">Javob yuborish</button>
-      </div>
+<div id="v3" class="view">
+<div class="section">
+<h2 id="l6">⚙️ Sozlamalar</h2>
+<div class="msg" id="msg"><span id="s1">Saqlandi!</span></div>
+<h3 id="l7">Til:</h3>
+<select id="lang" onchange="changeLang()">
+<option value="uz">O'zbek</option>
+<option value="en">English</option>
+<option value="ru">Русский</option>
+</select>
+<h3 id="l8" style="margin-top:20px">Parol:</h3>
+<input type="password" id="op" placeholder="Hozirgi">
+<input type="password" id="np" placeholder="Yangi">
+<input type="password" id="cp" placeholder="Tasdiqlash">
+<button class="btn-primary" onclick="changePass()" id="b3">O'zgartirish</button>
+</div>
+</div>
 
-      <div class="section">
-        <h2><span id="label-answers">💭 Javoblar</span> <span id="answer-count">(0)</span></h2>
-        <div id="answers-list">
-          <p class="empty-text" id="text-no-answers">Hozircha javoblar yo'q</p>
-        </div>
-      </div>
-    </div>
+<div id="m1" class="modal">
+<div class="modal-content">
+<h3 id="m1t">Parol kiriting</h3>
+<input type="password" id="mp">
+<div class="modal-btns">
+<button class="modal-btn confirm" onclick="postQ()" id="m1c">OK</button>
+<button class="modal-btn cancel" onclick="closePost()" id="m1x">Bekor</button>
+</div>
+</div>
+</div>
 
-    <!-- Archive View -->
-    <div id="view-archive" class="view">
-      <div class="section">
-        <h2 id="label-archive-title">📚 Arxiv</h2>
-        <div id="archive-list">
-          <p class="empty-text" id="text-empty-archive">Arxivda hech narsa yo'q</p>
-        </div>
-      </div>
-    </div>
+<div id="m2" class="modal">
+<div class="modal-content">
+<h3 id="m2t">O'chirish?</h3>
+<p style="color:#aaa;margin-bottom:10px" id="m2w">Qaytarib bo'lmaydi!</p>
+<input type="password" id="dp">
+<div class="modal-btns">
+<button class="modal-btn cancel" onclick="delQ()" id="m2c">O'chirish</button>
+<button class="modal-btn confirm" onclick="closeDel()" id="m2x">Bekor</button>
+</div>
+</div>
+</div>
 
-    <!-- Settings View -->
-    <div id="view-settings" class="view">
-      <div class="section">
-        <h2 id="label-settings-title">⚙️ Sozlamalar</h2>
-        
-        <div class="success-msg" id="success-message">
-          <span id="text-saved">O'zgarishlar saqlandi!</span>
-        </div>
+<div id="m3" class="modal">
+<div class="modal-content">
+<h3 id="m3t">Arxivdan o'chirish?</h3>
+<p style="color:#aaa;margin-bottom:10px" id="m3w">Qaytarib bo'lmaydi!</p>
+<input type="password" id="ap">
+<div class="modal-btns">
+<button class="modal-btn cancel" onclick="delArc()" id="m3c">O'chirish</button>
+<button class="modal-btn confirm" onclick="closeArc()" id="m3x">Bekor</button>
+</div>
+</div>
+</div>
+</div>
 
-        <h3 id="label-lang">Tilni tanlang:</h3>
-        <select id="select-language" onchange="changeLanguage()">
-          <option value="uz">O'zbek</option>
-          <option value="en">English</option>
-          <option value="ru">Русский</option>
-        </select>
-
-        <h3 style="margin-top:20px;" id="label-change-pass">Parolni o'zgartirish:</h3>
-        <input type="password" id="input-old-pass" placeholder="Hozirgi parol">
-        <input type="password" id="input-new-pass" placeholder="Yangi parol">
-        <input type="password" id="input-confirm-pass" placeholder="Parolni tasdiqlang">
-        <button class="primary-btn" onclick="changePassword()" id="btn-change-pass">Parolni o'zgartirish</button>
-      </div>
-    </div>
-
-    <!-- Post Question Modal -->
-    <div id="modal-post" class="modal">
-      <div class="modal-content">
-        <h3 id="modal-post-title">Parolni kiriting</h3>
-        <input type="password" id="modal-post-password" placeholder="Ega paroli...">
-        <div class="modal-buttons">
-          <button class="modal-btn confirm-btn" onclick="postQuestion()" id="modal-post-confirm">Tasdiqlash</button>
-          <button class="modal-btn cancel-btn" onclick="closePostModal()" id="modal-post-cancel">Bekor qilish</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Delete Question Modal -->
-    <div id="modal-delete" class="modal">
-      <div class="modal-content">
-        <h3 id="modal-delete-title">Savolni o'chirishni tasdiqlaysizmi?</h3>
-        <p style="color:#aaa;margin-bottom:10px;" id="modal-delete-warning">Bu amalni qaytarib bo'lmaydi!</p>
-        <input type="password" id="modal-delete-password" placeholder="Ega paroli...">
-        <div class="modal-buttons">
-          <button class="modal-btn cancel-btn" onclick="deleteCurrentQuestion()" id="modal-delete-confirm">O'chirish</button>
-          <button class="modal-btn confirm-btn" onclick="closeDeleteModal()" id="modal-delete-cancel">Bekor qilish</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Delete Archive Item Modal -->
-    <div id="modal-delete-archive" class="modal">
-      <div class="modal-content">
-        <h3 id="modal-archive-title">Arxiv elementini o'chirish?</h3>
-        <p style="color:#aaa;margin-bottom:10px;" id="modal-archive-warning">Bu amalni qaytarib bo'lmaydi!</p>
-        <input type="password" id="modal-archive-password" placeholder="Ega paroli...">
-        <div class="modal-buttons">
-          <button class="modal-btn cancel-btn" onclick="deleteArchiveItem()" id="modal-archive-confirm">O'chirish</button>
-          <button class="modal-btn confirm-btn" onclick="closeArchiveModal()" id="modal-archive-cancel">Bekor qilish</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    var OWNER_PASSWORD = localStorage.getItem('needinad_password') || 'owner123';
-    var CURRENT_LANG = localStorage.getItem('needinad_lang') || 'uz';
-    var archiveItemToDelete = null;
-
-    var TRANSLATIONS = {
-      uz: {
-        subtitle: "Savol bitta. Fikrlar ko'p.",
-        navMain: "🏠 Bosh sahifa",
-        navArchive: "📚 Arxiv",
-        navSettings: "⚙️ Sozlamalar",
-        labelOwnerPost: "Savol joylash (faqat egasi) 🔐",
-        btnPost: "Savolni joylash",
-        labelCurrent: "📌 Hozirgi Savol",
-        textNoQuestion: "Hozirda savol yo'q",
-        textDeleteQuestion: "Savolni o'chirish",
-        labelAnswer: "💬 Anonim javob qoldirish",
-        btnSubmitAnswer: "Javob yuborish",
-        labelAnswers: "💭 Javoblar",
-        textNoAnswers: "Hozircha javoblar yo'q",
-        labelArchiveTitle: "📚 Arxiv",
-        textEmptyArchive: "Arxivda hech narsa yo'q",
-        labelSettingsTitle: "⚙️ Sozlamalar",
-        textSaved: "O'zgarishlar saqlandi!",
-        labelLang: "Tilni tanlang:",
-        labelChangePass: "Parolni o'zgartirish:",
-        btnChangePass: "Parolni o'zgartirish",
-        modalPostTitle: "Parolni kiriting",
-        modalPostConfirm: "Tasdiqlash",
-        modalPostCancel: "Bekor qilish",
-        modalDeleteTitle: "Savolni o'chirishni tasdiqlaysizmi?",
-        modalDeleteWarning: "Bu amalni qaytarib bo'lmaydi!",
-        modalDeleteConfirm: "O'chirish",
-        modalDeleteCancel: "Bekor qilish",
-        modalArchiveTitle: "Arxiv elementini o'chirish?",
-        modalArchiveWarning: "Bu amalni qaytarib bo'lmaydi!",
-        modalArchiveConfirm: "O'chirish",
-        modalArchiveCancel: "Bekor qilish",
-        alertWrongPass: "Parol noto'g'ri!",
-        alertQuestionPosted: "Savol joylandi!",
-        alertQuestionDeleted: "Savol o'chirildi!",
-        alertAnswerSent: "Javob yuborildi!",
-        alertFillFields: "Barcha maydonlarni to'ldiring",
-        alertWrongOldPass: "Hozirgi parol noto'g'ri",
-        alertPassMismatch: "Parollar mos kelmadi",
-        alertPassShort: "Parol 4+ belgidan iborat bo'lsin",
-        alertArchiveDeleted: "Arxiv elementi o'chirildi!",
-        answersWord: "javob"
-      },
-      en: {
-        subtitle: "One question. Many thoughts.",
-        navMain: "🏠 Home",
-        navArchive: "📚 Archive",
-        navSettings: "⚙️ Settings",
-        labelOwnerPost: "Post Question (owner only) 🔐",
-        btnPost: "Post Question",
-        labelCurrent: "📌 Current Question",
-        textNoQuestion: "No question yet",
-        textDeleteQuestion: "Delete Question",
-        labelAnswer: "💬 Leave Anonymous Answer",
-        btnSubmitAnswer: "Send Answer",
-        labelAnswers: "💭 Answers",
-        textNoAnswers: "No answers yet",
-        labelArchiveTitle: "📚 Archive",
-        textEmptyArchive: "Archive is empty",
-        labelSettingsTitle: "⚙️ Settings",
-        textSaved: "Changes saved!",
-        labelLang: "Select Language:",
-        labelChangePass: "Change Password:",
-        btnChangePass: "Change Password",
-        modalPostTitle: "Enter Password",
-        modalPostConfirm: "Confirm",
-        modalPostCancel: "Cancel",
-        modalDeleteTitle: "Confirm deletion?",
-        modalDeleteWarning: "This cannot be undone!",
-        modalDeleteConfirm: "Delete",
-        modalDeleteCancel: "Cancel",
-        modalArchiveTitle: "Delete archive item?",
-        modalArchiveWarning: "This cannot be undone!",
-        modalArchiveConfirm: "Delete",
-        modalArchiveCancel: "Cancel",
-        alertWrongPass: "Incorrect password!",
-        alertQuestionPosted: "Question posted!",
-        alertQuestionDeleted: "Question deleted!",
-        alertAnswerSent: "Answer sent!",
-        alertFillFields: "Fill all fields",
-        alertWrongOldPass: "Current password incorrect",
-        alertPassMismatch: "Passwords don't match",
-        alertPassShort: "Password must be 4+ characters",
-        alertArchiveDeleted: "Archive item deleted!",
-        answersWord: "answers"
-      },
-      ru: {
-        subtitle: "Один вопрос. Много мыслей.",
-        navMain: "🏠 Главная",
-        navArchive: "📚 Архив",
-        navSettings: "⚙️ Настройки",
-        labelOwnerPost: "Опубликовать вопрос (только владелец) 🔐",
-        btnPost: "Опубликовать",
-        labelCurrent: "📌 Текущий вопрос",
-        textNoQuestion: "Нет вопроса",
-        textDeleteQuestion: "Удалить вопрос",
-        labelAnswer: "💬 Анонимный ответ",
-        btnSubmitAnswer: "Отправить",
-        labelAnswers: "💭 Ответы",
-        textNoAnswers: "Нет ответов",
-        labelArchiveTitle: "📚 Архив",
-        textEmptyArchive: "Архив пуст",
-        labelSettingsTitle: "⚙️ Настройки",
-        textSaved: "Изменения сохранены!",
-        labelLang: "Выберите язык:",
-        labelChangePass: "Изменить пароль:",
-        btnChangePass: "Изменить пароль",
-        modalPostTitle: "Введите пароль",
-        modalPostConfirm: "Подтвердить",
-        modalPostCancel: "Отмена",
-        modalDeleteTitle: "Удалить вопрос?",
-        modalDeleteWarning: "Это действие нельзя отменить!",
-        modalDeleteConfirm: "Удалить",
-        modalDeleteCancel: "Отмена",
-        modalArchiveTitle: "Удалить из архива?",
-        modalArchiveWarning: "Это действие нельзя отменить!",
-        modalArchiveConfirm: "Удалить",
-        modalArchiveCancel: "Отмена",
-        alertWrongPass: "Неверный пароль!",
-        alertQuestionPosted: "Вопрос опубликован!",
-        alertQuestionDeleted: "Вопрос удален!",
-        alertAnswerSent: "Ответ отправлен!",
-        alertFillFields: "Заполните все поля",
-        alertWrongOldPass: "Текущий пароль неверен",
-        alertPassMismatch: "Пароли не совпадают",
-        alertPassShort: "Пароль должен быть 4+ символов",
-        alertArchiveDeleted: "Элемент архива удален!",
-        answersWord: "ответов"
-      }
-    };
-
-    function getData() {
-      var current = localStorage.getItem('needinad_current');
-      var archive = localStorage.getItem('needinad_archive');
-      return {
-        current: current ? JSON.parse(current) : null,
-        archive: archive ? JSON.parse(archive) : []
-      };
-    }
-
-    function saveData(current, archive) {
-      if (current !== undefined) {
-        if (current === null) {
-          localStorage.removeItem('needinad_current');
-        } else {
-          localStorage.setItem('needinad_current', JSON.stringify(current));
-        }
-      }
-      if (archive !== undefined) {
-        localStorage.setItem('needinad_archive', JSON.stringify(archive));
-      }
-    }
-
-    function escapeHTML(text) {
-      var div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
-
-    function applyTranslations() {
-      var t = TRANSLATIONS[CURRENT_LANG];
-      document.getElementById('subtitle').textContent = t.subtitle;
-      document.getElementById('nav-main').textContent = t.navMain;
-      document.getElementById('nav-archive').textContent = t.navArchive;
-      document.getElementById('nav-settings').textContent = t.navSettings;
-      document.getElementById('label-owner-post').textContent = t.labelOwnerPost;
-      document.getElementById('btn-post').textContent = t.btnPost;
-      document.getElementById('label-current').textContent = t.labelCurrent;
-      document.getElementById('text-no-question').textContent = t.textNoQuestion;
-      document.getElementById('text-delete-question').textContent = t.textDeleteQuestion;
-      document.getElementById('label-answer').textContent = t.labelAnswer;
-      document.getElementById('btn-submit-answer').textContent = t.btnSubmitAnswer;
-      document.getElementById('label-answers').textContent = t.labelAnswers;
-      document.getElementById('text-no-answers').textContent = t.textNoAnswers;
-      document.getElementById('label-archive-title').textContent = t.labelArchiveTitle;
-      document.getElementById('text-empty-archive').textContent = t.textEmptyArchive;
-      document.getElementById('label-settings-title').textContent = t.labelSettingsTitle;
-      document.getElementById('text-saved').textContent = t.textSaved;
-      document.getElementById('label-lang').textContent = t.labelLang;
-      document.getElementById('label-change-pass').textContent = t.labelChangePass;
-      document.getElementById('btn-change-pass').textContent = t.btnChangePass;
-      document.getElementById('modal-post-title').textContent = t.modalPostTitle;
-      document.getElementById('modal-post-confirm').textContent = t.modalPostConfirm;
-      document.getElementById('modal-post-cancel').textContent = t.modalPostCancel;
-      document.getElementById('modal-delete-title').textContent = t.modalDeleteTitle;
-      document.getElementById('modal-delete-warning').textContent = t.modalDeleteWarning;
-      document.getElementById('modal-delete-confirm').textContent = t.modalDeleteConfirm;
-      document.getElementById('modal-delete-cancel').textContent = t.modalDeleteCancel;
-      document.getElementById('modal-archive-title').textContent = t.modalArchiveTitle;
-      document.getElementById('modal-archive-warning').textContent = t.modalArchiveWarning;
-      document.getElementById('modal-archive-confirm').textContent = t.modalArchiveConfirm;
-      document.getElementById('modal-archive-cancel').textContent = t.modalArchiveCancel;
-    }
-
-    function showView(viewName) {
-      var views = document.querySelectorAll('.view');
-      for (var i = 0; i < views.length; i++) {
-        views[i].classList.remove('active');
-      }
-      
-      if (viewName === 'main') {
-        document.getElementById('view-main').classList.add('active');
-        renderMain();
-      } else if (viewName === 'archive') {
-        document.getElementById('view-archive').classList.add('active');
-        renderArchive();
-      } else if (viewName === 'settings') {
-        document.getElementById('view-settings').classList.add('active');
-      }
-    }
-
-    function openPostModal() {
-      var question = document.getElementById('input-question').value.trim();
-      if (!question) {
-        alert(TRANSLATIONS[CURRENT_LANG].btnPost + '!');
-      var data = getData();
-      
-      if (data.current && data.current.question) {
-        data.archive.unshift({
-          id: Date.now(),
-          question: data.current.question,
-          answers: data.current.answers || [],
-          date: new Date().toLocaleDateString()
-        });
-      }
-
-      var newCurrent = {
-        question: question,
-        answers: []
-      };
-
-      saveData(newCurrent, data.archive);
-
-      document.getElementById('input-question').value = '';
-      closePostModal();
-      alert(TRANSLATIONS[CURRENT_LANG].alertQuestionPosted);
-      renderMain();
-    }
-
-    function openDeleteModal() {
-      document.getElementById('modal-delete').classList.add('show');
-    }
-
-    function closeDeleteModal() {
-      document.getElementById('modal-delete-password').value = '';
-      document.getElementById('modal-delete').classList.remove('show');
-    }
-
-    function deleteCurrentQuestion() {
-      var password = document.getElementById('modal-delete-password').value;
-
-      if (password !== OWNER_PASSWORD) {
-        alert(TRANSLATIONS[CURRENT_LANG].alertWrongPass);
-        document.getElementById('modal-delete-password').value = '';
-        return;
-      }
-
-      var data = getData();
-      
-      if (data.current && data.current.question) {
-        data.archive.unshift({
-          id: Date.now(),
-          question: data.current.question,
-          answers: data.current.answers || [],
-          date: new Date().toLocaleDateString()
-        });
-      }
-
-      saveData(null, data.archive);
-      closeDeleteModal();
-      alert(TRANSLATIONS[CURRENT_LANG].alertQuestionDeleted);
-      renderMain();
-    }
-
-    function submitAnswer() {
-      var answer = document.getElementById('input-answer').value.trim();
-      if (!answer) {
-        alert(TRANSLATIONS[CURRENT_LANG].btnSubmitAnswer + '!');
-        return;
-      }
-
-      var data = getData();
-      if (!data.current || !data.current.question) {
-        alert(TRANSLATIONS[CURRENT_LANG].textNoQuestion);
-        return;
-      }
-
-      data.current.answers.unshift(answer);
-      saveData(data.current, undefined);
-
-      document.getElementById('input-answer').value = '';
-      alert(TRANSLATIONS[CURRENT_LANG].alertAnswerSent);
-      renderMain();
-    }
-
-    function changeLanguage() {
-      CURRENT_LANG = document.getElementById('select-language').value;
-      localStorage.setItem('needinad_lang', CURRENT_LANG);
-      applyTranslations();
-      renderMain();
-      renderArchive();
-    }
-
-    function changePassword() {
-      var oldPass = document.getElementById('input-old-pass').value;
-      var newPass = document.getElementById('input-new-pass').value;
-      var confirmPass = document.getElementById('input-confirm-pass').value;
-
-      if (!oldPass || !newPass || !confirmPass) {
-        alert(TRANSLATIONS[CURRENT_LANG].alertFillFields);
-        return;
-      }
-
-      if (oldPass !== OWNER_PASSWORD) {
-        alert(TRANSLATIONS[CURRENT_LANG].alertWrongOldPass);
-        return;
-      }
-
-      if (newPass !== confirmPass) {
-        alert(TRANSLATIONS[CURRENT_LANG].alertPassMismatch);
-        return;
-      }
-
-      if (newPass.length < 4) {
-        alert(TRANSLATIONS[CURRENT_LANG].alertPassShort);
-        return;
-      }
-
-      OWNER_PASSWORD = newPass;
-      localStorage.setItem('needinad_password', newPass);
-      
-      document.getElementById('input-old-pass').value = '';
-      document.getElementById('input-new-pass').value = '';
-      document.getElementById('input-confirm-pass').value = '';
-      
-      var msg = document.getElementById('success-message');
-      msg.classList.add('show');
-      setTimeout(function() {
-        msg.classList.remove('show');
-      }, 3000);
-    }
-
-    function openArchiveModal(id) {
-      archiveItemToDelete = id;
-      document.getElementById('modal-delete-archive').classList.add('show');
-    }
-
-    function closeArchiveModal() {
-      archiveItemToDelete = null;
-      document.getElementById('modal-archive-password').value = '';
-      document.getElementById('modal-delete-archive').classList.remove('show');
-    }
-
-    function deleteArchiveItem() {
-      var password = document.getElementById('modal-archive-password').value;
-
-      if (password !== OWNER_PASSWORD) {
-        alert(TRANSLATIONS[CURRENT_LANG].alertWrongPass);
-        document.getElementById('modal-archive-password').value = '';
-        return;
-      }
-
-      var data = getData();
-      var newArchive = [];
-      for (var i = 0; i < data.archive.length; i++) {
-        if (data.archive[i].id !== archiveItemToDelete) {
-          newArchive.push(data.archive[i]);
-        }
-      }
-
-      saveData(undefined, newArchive);
-      closeArchiveModal();
-      alert(TRANSLATIONS[CURRENT_LANG].alertArchiveDeleted);
-      renderArchive();
-    }
-
-    function renderMain() {
-      var data = getData();
-      var questionDisplay = document.getElementById('current-question-display');
-      var deleteBtn = document.getElementById('btn-delete-current');
-      
-      if (data.current && data.current.question) {
-        questionDisplay.innerHTML = '<div class="question-box">' + escapeHTML(data.current.question) + '</div>';
-        deleteBtn.style.display = 'block';
-      } else {
-        questionDisplay.innerHTML = '<p class="empty-text">' + TRANSLATIONS[CURRENT_LANG].textNoQuestion + '</p>';
-        deleteBtn.style.display = 'none';
-      }
-
-      var answersList = document.getElementById('answers-list');
-      var answers = data.current ? data.current.answers || [] : [];
-      
-      document.getElementById('answer-count').textContent = '(' + answers.length + ')';
-
-      if (answers.length === 0) {
-        answersList.innerHTML = '<p class="empty-text">' + TRANSLATIONS[CURRENT_LANG].textNoAnswers + '</p>';
-      } else {
-        var html = '';
-        for (var i = 0; i < answers.length; i++) {
-          html += '<div class="answer-item">' + escapeHTML(answers[i]) + '</div>';
-        }
-        answersList.innerHTML = html;
-      }
-    }
-
-    function renderArchive() {
-      var data = getData();
-      var archiveList = document.getElementById('archive-list');
-
-      if (data.archive.length === 0) {
-        archiveList.innerHTML = '<p class="empty-text">' + TRANSLATIONS[CURRENT_LANG].textEmptyArchive + '</p>';
-        return;
-      }
-
-      var html = '';
-      for (var i = 0; i < data.archive.length; i++) {
-        var item = data.archive[i];
-        
-        html += '<div class="archive-item">';
-        html += '<div class="archive-header">';
-        html += '<div class="archive-question">' + escapeHTML(item.question) + '</div>';
-        html += '<div class="archive-date">' + item.date + '</div>';
-        html += '</div>';
-        
-        html += '<div class="archive-answers">';
-        html += '<p style="color:#aaa;font-size:14px;margin-bottom:10px;">' + item.answers.length + ' ' + TRANSLATIONS[CURRENT_LANG].answersWord + '</p>';
-        
-        var maxDisplay = Math.min(3, item.answers.length);
-        for (var j = 0; j < maxDisplay; j++) {
-          html += '<div class="archive-answer">' + escapeHTML(item.answers[j]) + '</div>';
-        }
-        
-        if (item.answers.length > 3) {
-          var remaining = item.answers.length - 3;
-          var moreText = CURRENT_LANG === 'uz' ? 'va yana' : CURRENT_LANG === 'en' ? 'and' : 'и ещё';
-          html += '<p style="color:#666;font-style:italic;font-size:12px;margin-top:5px;">... ' + moreText + ' ' + remaining + ' ' + TRANSLATIONS[CURRENT_LANG].answersWord + '</p>';
-        }
-        
-        html += '</div>';
-        html += '<button class="small-delete-btn" onclick="openArchiveModal(' + item.id + ')">🗑️ ' + TRANSLATIONS[CURRENT_LANG].modalDeleteConfirm + '</button>';
-        html += '</div>';
-      }
-      
-      archiveList.innerHTML = html;
-    }
-
-    function init() {
-      document.getElementById('select-language').value = CURRENT_LANG;
-      applyTranslations();
-      renderMain();
-    }
-
-    init();
-  </script>
+<script>
+var pass=localStorage.getItem('p')||'owner123',lang=localStorage.getItem('l')||'uz',delId=null;
+var tr={uz:{sub:"Savol bitta. Fikrlar ko'p.",n1:"🏠 Bosh sahifa",n2:"📚 Arxiv",n3:"⚙️ Sozlamalar",l1:"Savol joylash (egasi) 🔐",b1:"Joylash",l2:"📌 Hozirgi Savol",e1:"Savol yo'q",d1:"O'chirish",l3:"💬 Javob qoldirish",b2:"Yuborish",l4:"💭 Javoblar",e2:"Javoblar yo'q",l5:"📚 Arxiv",e3:"Arxiv bo'sh",l6:"⚙️ Sozlamalar",s1:"Saqlandi!",l7:"Til:",l8:"Parol:",b3:"O'zgartirish",m1t:"Parol kiriting",m1c:"OK",m1x:"Bekor",m2t:"O'chirish?",m2w:"Qaytarib bo'lmaydi!",m2c:"O'chirish",m2x:"Bekor",m3t:"Arxivdan o'chirish?",m3w:"Qaytarib bo'lmaydi!",m3c:"O'chirish",m3x:"Bekor",a1:"Parol xato!",a2:"Joylandi!",a3:"O'chirildi!",a4:"Yuborildi!",a5:"To'ldiring",a6:"Parol xato",a7:"Mos kelmadi",a8:"4+ belgi",a9:"Arxiv o'chirildi!",w:"javob"},en:{sub:"One question. Many thoughts.",n1:"🏠 Home",n2:"📚 Archive",n3:"⚙️ Settings",l1:"Post Question (owner) 🔐",b1:"Post",l2:"📌 Current Question",e1:"No question",d1:"Delete",l3:"💬 Anonymous Answer",b2:"Send",l4:"💭 Answers",e2:"No answers",l5:"📚 Archive",e3:"Empty archive",l6:"⚙️ Settings",s1:"Saved!",l7:"Language:",l8:"Password:",b3:"Change",m1t:"Enter Password",m1c:"OK",m1x:"Cancel",m2t:"Delete?",m2w:"Cannot undo!",m2c:"Delete",m2x:"Cancel",m3t:"Delete from archive?",m3w:"Cannot undo!",m3c:"Delete",m3x:"Cancel",a1:"Wrong password!",a2:"Posted!",a3:"Deleted!",a4:"Sent!",a5:"Fill all",a6:"Wrong password",a7:"Mismatch",a8:"4+ chars",a9:"Archive deleted!",w:"answers"},ru:{sub:"Один вопрос. Много мыслей.",n1:"🏠 Главная",n2:"📚 Архив",n3:"⚙️ Настройки",l1:"Опубликовать (владелец) 🔐",b1:"Опубликовать",l2:"📌 Текущий вопрос",e1:"Нет вопроса",d1:"Удалить",l3:"💬 Анонимный ответ",b2:"Отправить",l4:"💭 Ответы",e2:"Нет ответов",l5:"📚 Архив",e3:"Архив пуст",l6:"⚙️ Настройки",s1:"Сохранено!",l7:"Язык:",l8:"Пароль:",b3:"Изменить",m1t:"Введите пароль",m1c:"OK",m1x:"Отмена",m2t:"Удалить?",m2w:"Нельзя отменить!",m2c:"Удалить",m2x:"Отмена",m3t:"Удалить из архива?",m3w:"Нельзя отменить!",m3c:"Удалить",m3x:"Отмена",a1:"Неверный пароль!",a2:"Опубликовано!",a3:"Удалено!",a4:"Отправлено!",a5:"Заполните всё",a6:"Неверный пароль",a7:"Не совпадают",a8:"4+ символов",a9:"Архив удален!",w:"ответов"}};
+function g(){var c=localStorage.getItem('c'),a=localStorage.getItem('a');return {c:c?JSON.parse(c):null,a:a?JSON.parse(a):[]}}
+function s(c,a){if(c!==undefined){if(c===null)localStorage.removeItem('c');else localStorage.setItem('c',JSON.stringify(c))}if(a!==undefined)localStorage.setItem('a',JSON.stringify(a))}
+function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
+function trans(){var t=tr[lang];document.getElementById('sub').textContent=t.sub;document.getElementById('n1').textContent=t.n1;document.getElementById('n2').textContent=t.n2;document.getElementById('n3').textContent=t.n3;document.getElementById('l1').textContent=t.l1;document.getElementById('b1').textContent=t.b1;document.getElementById('l2').textContent=t.l2;document.getElementById('e1').textContent=t.e1;document.getElementById('d1').textContent=t.d1;document.getElementById('l3').textContent=t.l3;document.getElementById('b2').textContent=t.b2;document.getElementById('l4').textContent=t.l4;document.getElementById('e2').textContent=t.e2;document.getElementById('l5').textContent=t.l5;document.getElementById('e3').textContent=t.e3;document.getElementById('l6').textContent=t.l6;document.getElementById('s1').textContent=t.s1;document.getElementById('l7').textContent=t.l7;document.getElementById('l8').textContent=t.l8;document.getElementById('b3').textContent=t.b3;document.getElementById('m1t').textContent=t.m1t;document.getElementById('m1c').textContent=t.m1c;document.getElementById('m1x').textContent=t.m1x;document.getElementById('m2t').textContent=t.m2t;document.getElementById('m2w').textContent=t.m2w;document.getElementById('m2c').textContent=t.m2c;document.getElementById('m2x').textContent=t.m2x;document.getElementById('m3t').textContent=t.m3t;document.getElementById('m3w').textContent=t.m3w;document.getElementById('m3c').textContent=t.m3c;document.getElementById('m3x').textContent=t.m3x}
+function view(v){var vs=document.querySelectorAll('.view');for(var i=0;i<vs.length;i++)vs[i].classList.remove('active');if(v==='main'){document.getElementById('v1').classList.add('active');rMain()}else if(v==='archive'){document.getElementById('v2').classList.add('active');rArc()}else if(v==='settings'){document.getElementById('v3').classList.add('active')}}
+function openPost(){var q=document.getElementById('qi').value.trim();if(!q){alert(tr[lang].b1+'!');return}document.getElementById('m1').classList.add('show')}
+function closePost(){document.getElementById('mp').value='';document.getElementById('m1').classList.remove('show')}
+function postQ(){var p=document.getElementById('mp').value,q=document.getElementById('qi').value.trim();if(p!==pass){alert(tr[lang].a1);document.getElementById('mp').value='';return}var d=g();if(d.c&&d.c.q)d.a.unshift({id:Date.now(),q:d.c.q,a:d.c.a||[],d:new Date().toLocaleDateString()});var nc={q:q,a:[]};s(nc,d.a);document.getElementById('qi').value='';closePost();alert(tr[lang].a2);rMain()}
+function openDel(){document.getElementById('m2').classList.add('show')}
+function closeDel(){document.getElementById('dp').value='';document.getElementById('m2').classList.remove('show')}
+function delQ(){var p=document.getElementById('dp').value;if(p!==pass){alert(tr[lang].a1);document.getElementById('dp').value='';return}var d=g();if(d.c&&d.c.q)d.a.unshift({id:Date.now(),q:d.c.q,a:d.c.a||[],d:new Date().toLocaleDateString()});s(null,d.a);closeDel();alert(tr[lang].a3);rMain()}
+function addAns(){var a=document.getElementById('ai').value.trim();if(!a){alert(tr[lang].b2+'!');return}var d=g();if(!d.c||!d.c.q){alert(tr[lang].e1);return}d.c.a.unshift(a);s(d.c,undefined);document.getElementById('ai').value='';alert(tr[lang].a4);rMain()}
+function changeLang(){lang=document.getElementById('lang').value;localStorage.setItem('l',lang);trans();rMain();rArc()}
+function changePass(){var o=document.getElementById('op').value,n=document.getElementById('np').value,c=document.getElementById('cp').value;if(!o||!n||!c){alert(tr[lang].a5);return}if(o!==pass){alert(tr[lang].a6);return}if(n!==c){alert(tr[lang].a7);return}if(n.length<4){alert(tr[lang].a8);return}pass=n;localStorage.setItem('p',n);document.getElementById('op').value='';document.getElementById('np').value='';document.getElementById('cp').value='';var m=document.getElementById('msg');m.classList.add('show');setTimeout(function(){m.classList.remove('show')},3000)}
+function openArcDel(id){delId=id;document.getElementById('m3').classList.add('show')}
+function closeArc(){delId=null;document.getElementById('ap').value='';document.getElementById('m3').classList.remove('show')}
+function delArc(){var p=document.getElementById('ap').value;if(p!==pass){alert(tr[lang].a1);document.getElementById('ap').value='';return}var d=g(),na=[];for(var i=0;i<d.a.length;i++)if(d.a[i].id!==delId)na.push(d.a[i]);s(undefined,na);closeArc();alert(tr[lang].a9);rArc()}
+function rMain(){var d=g(),qd=document.getElementById('cq'),db=document.getElementById('bd');if(d.c&&d.c.q){qd.innerHTML='<div style="background:#222;padding:15px;border-radius:5px">'+esc(d.c.q)+'</div>';db.style.display='block'}else{qd.innerHTML='<p class="empty">'+tr[lang].e1+'</p>';db.style.display='none'}var al=document.getElementById('al'),ans=d.c?d.c.a||[]:[];document.getElementById('cnt').textContent='('+ans.length+')';if(ans.length===0)al.innerHTML='<p class="empty">'+tr[lang].e2+'</p>';else{var h='';for(var i=0;i<ans.length;i++)h+='<div class="answer">'+esc(ans[i])+'</div>';al.innerHTML=h}}
+function rArc(){var d=g(),arc=document.getElementById('arc');if(d.a.length===0){arc.innerHTML='<p class="empty">'+tr[lang].e3+'</p>';return}var h='';for(var i=0;i<d.a.length;i++){var it=d.a[i];h+='<div class="archive-item"><div class="archive-header"><div class="archive-q">'+esc(it.q)+'</div><div style="color:#888;font-size:12px">'+it.d+'</div></div><div style="border-left:3px solid #333;padding-left:15px"><p style="color:#aaa;font-size:14px;margin-bottom:10px">'+it.a.length+' '+tr[lang].w+'</p>';var max=Math.min(3,it.a.length);for(var j=0;j<max;j++)h+='<div style="background:#1a1a1a;padding:8px;border-radius:4px;margin-bottom:8px;font-size:14px">'+esc(it.a[j])+'</div>';if(it.a.length>3){var rem=it.a.length-3,mt=lang==='uz'?'va yana':lang==='en'?'and':'и ещё';h+='<p style="color:#666;font-style:italic;font-size:12px">... '+mt+' '+rem+' '+tr[lang].w+'</p>'}h+='</div><button style="padding:6px 12px;background:#f44336;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;margin-top:10px" onclick="openArcDel('+it.id+')">🗑️ '+tr[lang].d1+'</button></div>'}arc.innerHTML=h}
+document.getElementById('lang').value=lang;trans();rMain();
+</script>
 </body>
-</html>
+  </html>
