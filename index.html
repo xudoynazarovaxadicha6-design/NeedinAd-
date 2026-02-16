@@ -611,4 +611,244 @@
       var question = document.getElementById('input-question').value.trim();
       if (!question) {
         alert(TRANSLATIONS[CURRENT_LANG].btnPost + '!');
+      var data = getData();
       
+      if (data.current && data.current.question) {
+        data.archive.unshift({
+          id: Date.now(),
+          question: data.current.question,
+          answers: data.current.answers || [],
+          date: new Date().toLocaleDateString()
+        });
+      }
+
+      var newCurrent = {
+        question: question,
+        answers: []
+      };
+
+      saveData(newCurrent, data.archive);
+
+      document.getElementById('input-question').value = '';
+      closePostModal();
+      alert(TRANSLATIONS[CURRENT_LANG].alertQuestionPosted);
+      renderMain();
+    }
+
+    function openDeleteModal() {
+      document.getElementById('modal-delete').classList.add('show');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('modal-delete-password').value = '';
+      document.getElementById('modal-delete').classList.remove('show');
+    }
+
+    function deleteCurrentQuestion() {
+      var password = document.getElementById('modal-delete-password').value;
+
+      if (password !== OWNER_PASSWORD) {
+        alert(TRANSLATIONS[CURRENT_LANG].alertWrongPass);
+        document.getElementById('modal-delete-password').value = '';
+        return;
+      }
+
+      var data = getData();
+      
+      if (data.current && data.current.question) {
+        data.archive.unshift({
+          id: Date.now(),
+          question: data.current.question,
+          answers: data.current.answers || [],
+          date: new Date().toLocaleDateString()
+        });
+      }
+
+      saveData(null, data.archive);
+      closeDeleteModal();
+      alert(TRANSLATIONS[CURRENT_LANG].alertQuestionDeleted);
+      renderMain();
+    }
+
+    function submitAnswer() {
+      var answer = document.getElementById('input-answer').value.trim();
+      if (!answer) {
+        alert(TRANSLATIONS[CURRENT_LANG].btnSubmitAnswer + '!');
+        return;
+      }
+
+      var data = getData();
+      if (!data.current || !data.current.question) {
+        alert(TRANSLATIONS[CURRENT_LANG].textNoQuestion);
+        return;
+      }
+
+      data.current.answers.unshift(answer);
+      saveData(data.current, undefined);
+
+      document.getElementById('input-answer').value = '';
+      alert(TRANSLATIONS[CURRENT_LANG].alertAnswerSent);
+      renderMain();
+    }
+
+    function changeLanguage() {
+      CURRENT_LANG = document.getElementById('select-language').value;
+      localStorage.setItem('needinad_lang', CURRENT_LANG);
+      applyTranslations();
+      renderMain();
+      renderArchive();
+    }
+
+    function changePassword() {
+      var oldPass = document.getElementById('input-old-pass').value;
+      var newPass = document.getElementById('input-new-pass').value;
+      var confirmPass = document.getElementById('input-confirm-pass').value;
+
+      if (!oldPass || !newPass || !confirmPass) {
+        alert(TRANSLATIONS[CURRENT_LANG].alertFillFields);
+        return;
+      }
+
+      if (oldPass !== OWNER_PASSWORD) {
+        alert(TRANSLATIONS[CURRENT_LANG].alertWrongOldPass);
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        alert(TRANSLATIONS[CURRENT_LANG].alertPassMismatch);
+        return;
+      }
+
+      if (newPass.length < 4) {
+        alert(TRANSLATIONS[CURRENT_LANG].alertPassShort);
+        return;
+      }
+
+      OWNER_PASSWORD = newPass;
+      localStorage.setItem('needinad_password', newPass);
+      
+      document.getElementById('input-old-pass').value = '';
+      document.getElementById('input-new-pass').value = '';
+      document.getElementById('input-confirm-pass').value = '';
+      
+      var msg = document.getElementById('success-message');
+      msg.classList.add('show');
+      setTimeout(function() {
+        msg.classList.remove('show');
+      }, 3000);
+    }
+
+    function openArchiveModal(id) {
+      archiveItemToDelete = id;
+      document.getElementById('modal-delete-archive').classList.add('show');
+    }
+
+    function closeArchiveModal() {
+      archiveItemToDelete = null;
+      document.getElementById('modal-archive-password').value = '';
+      document.getElementById('modal-delete-archive').classList.remove('show');
+    }
+
+    function deleteArchiveItem() {
+      var password = document.getElementById('modal-archive-password').value;
+
+      if (password !== OWNER_PASSWORD) {
+        alert(TRANSLATIONS[CURRENT_LANG].alertWrongPass);
+        document.getElementById('modal-archive-password').value = '';
+        return;
+      }
+
+      var data = getData();
+      var newArchive = [];
+      for (var i = 0; i < data.archive.length; i++) {
+        if (data.archive[i].id !== archiveItemToDelete) {
+          newArchive.push(data.archive[i]);
+        }
+      }
+
+      saveData(undefined, newArchive);
+      closeArchiveModal();
+      alert(TRANSLATIONS[CURRENT_LANG].alertArchiveDeleted);
+      renderArchive();
+    }
+
+    function renderMain() {
+      var data = getData();
+      var questionDisplay = document.getElementById('current-question-display');
+      var deleteBtn = document.getElementById('btn-delete-current');
+      
+      if (data.current && data.current.question) {
+        questionDisplay.innerHTML = '<div class="question-box">' + escapeHTML(data.current.question) + '</div>';
+        deleteBtn.style.display = 'block';
+      } else {
+        questionDisplay.innerHTML = '<p class="empty-text">' + TRANSLATIONS[CURRENT_LANG].textNoQuestion + '</p>';
+        deleteBtn.style.display = 'none';
+      }
+
+      var answersList = document.getElementById('answers-list');
+      var answers = data.current ? data.current.answers || [] : [];
+      
+      document.getElementById('answer-count').textContent = '(' + answers.length + ')';
+
+      if (answers.length === 0) {
+        answersList.innerHTML = '<p class="empty-text">' + TRANSLATIONS[CURRENT_LANG].textNoAnswers + '</p>';
+      } else {
+        var html = '';
+        for (var i = 0; i < answers.length; i++) {
+          html += '<div class="answer-item">' + escapeHTML(answers[i]) + '</div>';
+        }
+        answersList.innerHTML = html;
+      }
+    }
+
+    function renderArchive() {
+      var data = getData();
+      var archiveList = document.getElementById('archive-list');
+
+      if (data.archive.length === 0) {
+        archiveList.innerHTML = '<p class="empty-text">' + TRANSLATIONS[CURRENT_LANG].textEmptyArchive + '</p>';
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < data.archive.length; i++) {
+        var item = data.archive[i];
+        
+        html += '<div class="archive-item">';
+        html += '<div class="archive-header">';
+        html += '<div class="archive-question">' + escapeHTML(item.question) + '</div>';
+        html += '<div class="archive-date">' + item.date + '</div>';
+        html += '</div>';
+        
+        html += '<div class="archive-answers">';
+        html += '<p style="color:#aaa;font-size:14px;margin-bottom:10px;">' + item.answers.length + ' ' + TRANSLATIONS[CURRENT_LANG].answersWord + '</p>';
+        
+        var maxDisplay = Math.min(3, item.answers.length);
+        for (var j = 0; j < maxDisplay; j++) {
+          html += '<div class="archive-answer">' + escapeHTML(item.answers[j]) + '</div>';
+        }
+        
+        if (item.answers.length > 3) {
+          var remaining = item.answers.length - 3;
+          var moreText = CURRENT_LANG === 'uz' ? 'va yana' : CURRENT_LANG === 'en' ? 'and' : 'и ещё';
+          html += '<p style="color:#666;font-style:italic;font-size:12px;margin-top:5px;">... ' + moreText + ' ' + remaining + ' ' + TRANSLATIONS[CURRENT_LANG].answersWord + '</p>';
+        }
+        
+        html += '</div>';
+        html += '<button class="small-delete-btn" onclick="openArchiveModal(' + item.id + ')">🗑️ ' + TRANSLATIONS[CURRENT_LANG].modalDeleteConfirm + '</button>';
+        html += '</div>';
+      }
+      
+      archiveList.innerHTML = html;
+    }
+
+    function init() {
+      document.getElementById('select-language').value = CURRENT_LANG;
+      applyTranslations();
+      renderMain();
+    }
+
+    init();
+  </script>
+</body>
+</html>
