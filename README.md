@@ -1,2 +1,135 @@
 # NeedinAd-
-Anonymous question and answer platform. Only the owner posts questions, everyone can reply anonymously 
+  <!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <title>NeedinAd</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; background:#f6f7f9; margin:0; padding:20px; }
+    h1 { text-align:center; }
+    .box { background:#fff; padding:15px; border-radius:8px; margin-bottom:15px; }
+    input, select, textarea, button {
+      width:100%; padding:10px; margin:5px 0; border-radius:6px; border:1px solid #ccc;
+    }
+    button { cursor:pointer; background:#4f46e5; color:#fff; border:none; }
+    button.danger { background:#dc2626; }
+    .answer { border-top:1px solid #eee; padding:8px 0; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+
+<h1>NeedinAd</h1>
+
+<div class="box">
+  <b>Til:</b>
+  <select id="langSelect">
+    <option value="uz">O‘zbek</option>
+    <option value="en">English</option>
+    <option value="ru">Русский</option>
+  </select>
+</div>
+
+<div class="box">
+  <h3>🔒 Savol joylash (faqat egasi)</h3>
+  <input id="ownerPassword" type="password" placeholder="Ega paroli">
+  <textarea id="questionInput" placeholder="Savolni yozing..."></textarea>
+  <button onclick="postQuestion()">Joylash</button>
+</div>
+
+<div class="box">
+  <h3>📌 Joriy savol</h3>
+  <div id="currentQuestion">Savol yo‘q</div>
+  <input id="deletePassword" type="password" placeholder="Ega paroli">
+  <button class="danger" onclick="deleteQuestion()">Savolni o‘chirish</button>
+</div>
+
+<div class="box">
+  <h3>💬 Anonim javoblar</h3>
+  <textarea id="answerInput" placeholder="Javob yozing..."></textarea>
+  <button onclick="addAnswer()">Yuborish</button>
+  <div id="answers"></div>
+</div>
+
+<div class="box">
+  <h3>📁 Arxiv</h3>
+  <div id="archive"></div>
+</div>
+
+<div class="box">
+  <h3>⚙️ Sozlamalar</h3>
+  <input id="oldPass" type="password" placeholder="Hozirgi parol">
+  <input id="newPass" type="password" placeholder="Yangi parol">
+  <button onclick="changePassword()">Parolni o‘zgartirish</button>
+</div>
+
+<script>
+  const DEFAULT_PASSWORD = "1234";
+
+  if (!localStorage.getItem("password")) {
+    localStorage.setItem("password", DEFAULT_PASSWORD);
+  }
+
+  function postQuestion() {
+    const pass = ownerPassword.value;
+    if (pass !== localStorage.getItem("password")) {
+      alert("Parol noto‘g‘ri");
+      return;
+    }
+    localStorage.setItem("question", questionInput.value);
+    localStorage.setItem("answers", JSON.stringify([]));
+    render();
+  }
+
+  function deleteQuestion() {
+    const pass = deletePassword.value;
+    if (pass !== localStorage.getItem("password")) {
+      alert("Parol noto‘g‘ri");
+      return;
+    }
+    const archive = JSON.parse(localStorage.getItem("archive") || "[]");
+    archive.unshift({
+      question: localStorage.getItem("question"),
+      answers: JSON.parse(localStorage.getItem("answers") || "[]")
+    });
+    localStorage.setItem("archive", JSON.stringify(archive));
+    localStorage.removeItem("question");
+    localStorage.removeItem("answers");
+    render();
+  }
+
+  function addAnswer() {
+    const answers = JSON.parse(localStorage.getItem("answers") || "[]");
+    answers.push(answerInput.value);
+    localStorage.setItem("answers", JSON.stringify(answers));
+    render();
+  }
+
+  function changePassword() {
+    if (oldPass.value !== localStorage.getItem("password")) {
+      alert("Parol noto‘g‘ri");
+      return;
+    }
+    localStorage.setItem("password", newPass.value);
+    alert("Parol o‘zgartirildi");
+  }
+
+  function render() {
+    currentQuestion.innerText = localStorage.getItem("question") || "Savol yo‘q";
+    answers.innerHTML = "";
+    (JSON.parse(localStorage.getItem("answers") || "[]")).forEach(a => {
+      answers.innerHTML += `<div class="answer">${a}</div>`;
+    });
+
+    archive.innerHTML = "";
+    (JSON.parse(localStorage.getItem("archive") || "[]")).forEach(a => {
+      archive.innerHTML += `<div class="answer"><b>${a.question}</b></div>`;
+    });
+  }
+
+  render();
+</script>
+
+</body>
+</html>   
